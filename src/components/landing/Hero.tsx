@@ -36,17 +36,17 @@ export default function Hero() {
         <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden hero-grid">
             {/* Background Effects */}
             <div className="hero-glow -top-40 -left-20" />
-            <div className="hero-glow -bottom-40 -right-20 opacity-50" style={{ background: "radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%)" }} />
+            <div className="hero-glow -bottom-40 -right-20 opacity-50" style={{ background: "radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)" }} />
 
             <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-16 items-center relative z-10">
                 {/* Left: Copy */}
                 <div className="flex flex-col gap-8 animate-slide-up">
-                    <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 w-fit text-sm">
+                    <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 w-fit text-sm bg-[var(--primary)]/10 border border-[var(--primary)]/20">
                         <span className="w-2 h-2 rounded-full bg-[var(--secondary)] animate-pulse" />
-                        <span className="text-[var(--text-secondary)]">AI 기반 맞춤형 교육 플랫폼</span>
+                        <span className="text-[var(--primary)] font-medium">AI 기반 맞춤형 교육 플랫폼</span>
                     </div>
 
-                    <h1 className="text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+                    <h1 className="text-5xl lg:text-6xl font-bold leading-tight tracking-tight whitespace-nowrap">
                         <span className="text-[var(--text-primary)]">AI가 당신만의</span>
                         <br />
                         <span className="gradient-text">선생님</span>
@@ -56,7 +56,7 @@ export default function Hero() {
                     <p className="text-lg text-[var(--text-secondary)] max-w-lg leading-relaxed">
                         한국어, 영어, 일본어, 중국어 그리고 프로그래밍까지.
                         <br />
-                        AI 강사와 <strong className="text-[var(--text-primary)]">실시간 대화</strong>하며 배우는 새로운 방식의 학습 경험.
+                        AI 강사와 <strong className="text-[var(--primary)]">실시간 대화</strong>하며 배우는 새로운 방식의 학습 경험.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -76,23 +76,23 @@ export default function Hero() {
                             { value: "4.9/5", label: "평점" },
                         ].map((stat) => (
                             <div key={stat.label} className="flex flex-col">
-                                <span className="text-2xl font-bold text-[var(--text-primary)]">{stat.value}</span>
+                                <span className="text-2xl font-bold text-[var(--primary)]">{stat.value}</span>
                                 <span className="text-xs text-[var(--text-muted)]">{stat.label}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* Right: AI Chat Demo */}
+                {/* Right: AI Chat Demo (dark card for contrast) */}
                 <div className="animate-slide-up stagger-2 opacity-0 lg:block">
-                    <div className="glass rounded-2xl p-6 space-y-4 relative card-hover">
+                    <div className="chat-demo-card rounded-2xl p-6 space-y-4 relative card-hover shadow-lg">
                         {/* Chat Header */}
-                        <div className="flex items-center gap-3 pb-4 border-b border-[var(--border)]">
+                        <div className="flex items-center gap-3 pb-4 border-b border-white/10">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-lg">
                                 🤖
                             </div>
                             <div>
-                                <div className="text-sm font-semibold text-[var(--text-primary)]">AI Teacher Lee</div>
+                                <div className="text-sm font-semibold text-white">AI Teacher Lee</div>
                                 <div className="text-xs text-[var(--secondary)]">● Online</div>
                             </div>
                             <div className="ml-auto px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--primary)]/20 text-[var(--primary-light)]">
@@ -106,8 +106,8 @@ export default function Hero() {
                                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-xs shrink-0 mt-1">
                                     AI
                                 </div>
-                                <div className="glass rounded-xl rounded-tl-sm px-4 py-3 max-w-xs">
-                                    <p className="text-sm text-[var(--text-primary)]">
+                                <div className="chat-bubble-ai rounded-xl rounded-tl-sm px-4 py-3 max-w-xs">
+                                    <p className="text-sm text-white/90">
                                         안녕하세요! 👋 오늘은 무엇을 배우고 싶으신가요? 언어, 코딩, 시험 대비 모두 도와드릴 수 있어요!
                                     </p>
                                 </div>
@@ -126,8 +126,8 @@ export default function Hero() {
                                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-xs shrink-0 mt-1">
                                     AI
                                 </div>
-                                <div className="glass rounded-xl rounded-tl-sm px-4 py-3 max-w-xs">
-                                    <p className="text-sm text-[var(--text-primary)]">
+                                <div className="chat-bubble-ai rounded-xl rounded-tl-sm px-4 py-3 max-w-xs">
+                                    <p className="text-sm text-white/90">
                                         좋아요! 당신의 레벨에 맞는 맞춤 커리큘럼을 만들어 드릴게요. 먼저 간단한 레벨 테스트를 해볼까요? 🎯
                                     </p>
                                 </div>
@@ -136,7 +136,7 @@ export default function Hero() {
 
                         {/* Input */}
                         <div className="flex gap-2 pt-2">
-                            <div className="flex-1 glass rounded-full px-4 py-2.5 text-sm text-[var(--text-muted)] flex items-center gap-2">
+                            <div className="flex-1 chat-input rounded-full px-4 py-2.5 text-sm flex items-center gap-2">
                                 <span>🎤</span>
                                 <span>메시지를 입력하세요...</span>
                             </div>
@@ -146,7 +146,7 @@ export default function Hero() {
                         </div>
 
                         {/* Decorative Glow */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-[var(--primary)]/20 to-[var(--secondary)]/20 blur-2xl -z-10 rounded-2xl" />
+                        <div className="absolute -inset-1 bg-gradient-to-r from-[var(--primary)]/10 to-[var(--secondary)]/10 blur-2xl -z-10 rounded-2xl" />
                     </div>
                 </div>
             </div>
