@@ -3,29 +3,29 @@
 /* ===== Teacher.Lee Design System — Bright Education Theme ===== */
 
 :root {
-  --primary: #4F46E5;
-  --primary-light: #6366F1;
+  --primary: #5B4FE9;
+  --primary-light: #7C6FF7;
   --primary-dark: #4338CA;
   --secondary: #10B981;
   --secondary-light: #34D399;
-  --accent: #F59E0B;
-  --accent-light: #FBBF24;
+  --accent: #FF8C42;
+  --accent-light: #FFB07A;
 
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F8FAFC;
+  --bg-secondary: #FAFBFE;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F1F5F9;
-  --bg-input: #F1F5F9;
+  --bg-card-hover: #F5F3FF;
+  --bg-input: #F5F3FF;
 
-  --text-primary: #0F172A;
+  --text-primary: #1E1B4B;
   --text-secondary: #475569;
   --text-muted: #94A3B8;
 
-  --border: #E2E8F0;
-  --border-light: #CBD5E1;
+  --border: #E8E5F5;
+  --border-light: #D4D0EC;
 
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(79, 70, 229, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(91, 79, 233, 0.08);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -33,14 +33,14 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
-  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.2);
-  --shadow-glow-lg: 0 0 40px rgba(79, 70, 229, 0.15), 0 0 80px rgba(79, 70, 229, 0.08);
+  --shadow-sm: 0 1px 3px rgba(91, 79, 233, 0.04);
+  --shadow-md: 0 4px 14px rgba(91, 79, 233, 0.08);
+  --shadow-lg: 0 8px 30px rgba(91, 79, 233, 0.1);
+  --shadow-glow: 0 0 20px rgba(91, 79, 233, 0.2);
+  --shadow-glow-lg: 0 0 40px rgba(91, 79, 233, 0.15), 0 0 80px rgba(91, 79, 233, 0.08);
 
   --background: #FFFFFF;
-  --foreground: #0F172A;
+  --foreground: #1E1B4B;
 }
 
 @theme inline {
@@ -335,10 +335,10 @@ body {
 /* ===== Hero Background Effect ===== */
 
 .hero-grid {
-  background-color: var(--bg-secondary);
+  background: linear-gradient(135deg, #FAFBFE 0%, #F0EDFF 40%, #FFF5EE 100%);
   background-image:
-    linear-gradient(rgba(79, 70, 229, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(79, 70, 229, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(91, 79, 233, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 79, 233, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
@@ -347,7 +347,7 @@ body {
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(91, 79, 233, 0.1) 0%, transparent 70%);
   filter: blur(60px);
   pointer-events: none;
 }
@@ -355,8 +355,8 @@ body {
 /* ===== Chat Demo Card (dark card on light page) ===== */
 
 .chat-demo-card {
-  background: linear-gradient(145deg, #1E293B 0%, #0F172A 100%);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: linear-gradient(145deg, #2D2660 0%, #1E1B4B 100%);
+  border: 1px solid rgba(124, 111, 247, 0.15);
   color: #F8FAFC;
 }
 

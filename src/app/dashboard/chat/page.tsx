@@ -13,8 +13,8 @@ const initialMessages: Message[] = [
     {
         id: 1,
         role: "ai",
-        text: "안녕하세요! 저는 Teacher Lee입니다. 😊\n\n오늘은 무엇을 배우고 싶으신가요? 아래에서 선택하거나 자유롭게 말씀해주세요!\n\n• 🗣️ 일상 회화 연습\n• 📝 문법 학습\n• 📖 읽기 연습\n• 🎧 듣기 연습",
-        timestamp: "오후 11:30",
+        text: "안녕하세요! 저는 Teacher Lee입니다. 😊\n\n오늘은 무엇을 배우고 싶으신가요? 아래에서 선택하거나 자유롭게 말씀해주세요!\n\n• 🗣️ 일상 회화 연습\n• 📝 문법 학습\n• 📖 읽기 연습\n• 💻 코딩 학습",
+        timestamp: new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }),
     },
 ];
 
@@ -22,7 +22,7 @@ const quickReplies = [
     "한국어 존댓말을 알려주세요",
     "일상 대화 연습하기",
     "문법 퀴즈 풀기",
-    "발음 교정 받기",
+    "JavaScript 기초 배우기",
 ];
 
 const subjects = [
@@ -45,8 +45,8 @@ export default function ChatPage() {
         }
     }, [messages, isTyping]);
 
-    const sendMessage = (text: string) => {
-        if (!text.trim()) return;
+    const sendMessage = async (text: string) => {
+        if (!text.trim() || isTyping) return;
 
         const userMsg: Message = {
             id: messages.length + 1,
@@ -55,36 +55,53 @@ export default function ChatPage() {
             timestamp: new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }),
         };
 
-        setMessages((prev) => [...prev, userMsg]);
+        const updatedMessages = [...messages, userMsg];
+        setMessages(updatedMessages);
         setInput("");
         setIsTyping(true);
 
-        // Simulated AI response
-        setTimeout(() => {
-            const aiResponses: Record<string, string> = {
-                "한국어 존댓말을 알려주세요":
-                    "좋아요! 존댓말(敬語)은 한국어에서 아주 중요해요. 🙂\n\n**기본 원칙**: 동사/형용사 어간 + '-요' / '-습니다'\n\n**예시:**\n• 먹다 → 먹어요 (casual polite) → 드십니다 (formal)\n• 가다 → 가요 → 가십니다\n• 하다 → 해요 → 하십니다\n\n💡 **팁**: 처음 만난 사람이나 나이가 많은 분에게는 항상 존댓말을 사용하세요!\n\n연습해볼까요? 아래 문장을 존댓말로 바꿔보세요:\n> \"나 배고파\"",
-                "일상 대화 연습하기":
-                    "좋아요! 상황극을 해볼까요? 🎭\n\n**상황**: 당신은 서울의 카페에 있습니다. 점원에게 주문을 해보세요.\n\n점원(AI): \"어서오세요! 주문하시겠어요?\"\n\n👉 한국어로 대답해보세요!",
-                "문법 퀴즈 풀기":
-                    "📝 문법 퀴즈를 시작합니다!\n\n**Q1.** 빈칸에 알맞은 조사를 넣으세요:\n\n> \"저는 학교___ 갑니다.\"\n\n(a) 을  (b) 에  (c) 를  (d) 에서\n\n정답을 말씀해주세요!",
-                "발음 교정 받기":
-                    "🎤 발음 교정 모드를 시작합니다!\n\n음성 녹음 버튼(🎤)을 눌러 아래 문장을 읽어보세요:\n\n> **\"안녕하세요, 만나서 반갑습니다.\"**\n\n(현재 데모 버전에서는 텍스트로 입력해주시면 발음 피드백을 제공해드립니다.)",
-            };
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: text.trim(),
+                    subject: selectedSubject,
+                    history: updatedMessages.slice(-10).map((m) => ({
+                        role: m.role === "ai" ? "assistant" : "user",
+                        content: m.text,
+                    })),
+                }),
+            });
 
-            const defaultResponse =
-                "좋은 질문이에요! 😊\n\n해당 내용에 대해 자세히 설명해드릴게요. 한국어 학습에서 가장 중요한 것은 꾸준한 연습이에요.\n\n더 궁금한 점이 있으면 자유롭게 물어보세요!";
+            let aiText: string;
+
+            if (res.ok) {
+                const data = await res.json();
+                aiText = data.reply || data.message || "죄송합니다, 응답을 처리하지 못했어요.";
+            } else {
+                aiText = "⚠️ AI 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.";
+            }
 
             const aiMsg: Message = {
-                id: messages.length + 2,
+                id: updatedMessages.length + 1,
                 role: "ai",
-                text: aiResponses[text.trim()] || defaultResponse,
+                text: aiText,
                 timestamp: new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }),
             };
 
             setIsTyping(false);
             setMessages((prev) => [...prev, aiMsg]);
-        }, 1500);
+        } catch {
+            setIsTyping(false);
+            const errorMsg: Message = {
+                id: updatedMessages.length + 1,
+                role: "ai",
+                text: "⚠️ 네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.",
+                timestamp: new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }),
+            };
+            setMessages((prev) => [...prev, errorMsg]);
+        }
     };
 
     return (
@@ -111,8 +128,8 @@ export default function ChatPage() {
                             key={s.id}
                             onClick={() => setSelectedSubject(s.id)}
                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedSubject === s.id
-                                    ? "bg-[var(--primary)]/20 text-[var(--primary-light)] border border-[var(--primary)]/30"
-                                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                                ? "bg-[var(--primary)]/20 text-[var(--primary-light)] border border-[var(--primary)]/30"
+                                : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                                 }`}
                         >
                             {s.flag}
@@ -146,8 +163,8 @@ export default function ChatPage() {
                         <div className="max-w-lg">
                             <div
                                 className={`rounded-2xl px-4 py-3 text-sm whitespace-pre-line leading-relaxed ${msg.role === "user"
-                                        ? "bg-[var(--primary)] text-white rounded-tr-sm"
-                                        : "glass rounded-tl-sm text-[var(--text-primary)]"
+                                    ? "bg-[var(--primary)] text-white rounded-tr-sm"
+                                    : "glass rounded-tl-sm text-[var(--text-primary)]"
                                     }`}
                             >
                                 {msg.text}
@@ -215,7 +232,8 @@ export default function ChatPage() {
                     </div>
                     <button
                         onClick={() => sendMessage(input)}
-                        className="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white hover:bg-[var(--primary-light)] transition-colors shrink-0"
+                        disabled={isTyping}
+                        className="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white hover:bg-[var(--primary-light)] transition-colors shrink-0 disabled:opacity-50"
                     >
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M5 12l7-4-7-4v8z" fill="currentColor" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function Header() {
     const [scrolled, setScrolled] = useState(false);
@@ -19,14 +20,14 @@ export default function Header() {
         >
             <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                 {/* Logo */}
-                <a href="#" className="flex items-center gap-2.5 group">
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:shadow-[var(--shadow-glow)] transition-shadow">
+                <Link href="/" className="flex items-center gap-2.5 group">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:shadow-[var(--shadow-glow)] transition-shadow">
                         T.L
                     </div>
                     <span className="text-lg font-bold text-[var(--text-primary)]">
-                        Teacher<span className="text-[var(--primary-light)]">.Lee</span>
+                        Teacher<span className="text-[var(--primary)]">.Lee</span>
                     </span>
-                </a>
+                </Link>
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-8">
@@ -38,7 +39,7 @@ export default function Header() {
                         <a
                             key={item.href}
                             href={item.href}
-                            className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                            className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors"
                         >
                             {item.label}
                         </a>
@@ -47,12 +48,12 @@ export default function Header() {
 
                 {/* CTA Buttons */}
                 <div className="hidden md:flex items-center gap-3">
-                    <button className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-4 py-2">
+                    <Link href="/login" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors px-4 py-2">
                         로그인
-                    </button>
-                    <button className="btn-primary text-sm !py-2.5 !px-5">
+                    </Link>
+                    <Link href="/login" className="btn-primary text-sm !py-2.5 !px-5">
                         무료 시작 →
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -82,15 +83,15 @@ export default function Header() {
                             <a
                                 key={item.href}
                                 href={item.href}
-                                className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                                className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors"
                                 onClick={() => setMobileOpen(false)}
                             >
                                 {item.label}
                             </a>
                         ))}
                         <div className="flex gap-3 pt-2">
-                            <button className="btn-secondary text-sm flex-1 justify-center">로그인</button>
-                            <button className="btn-primary text-sm flex-1 justify-center">무료 시작</button>
+                            <Link href="/login" className="btn-secondary text-sm flex-1 justify-center" onClick={() => setMobileOpen(false)}>로그인</Link>
+                            <Link href="/login" className="btn-primary text-sm flex-1 justify-center" onClick={() => setMobileOpen(false)}>무료 시작</Link>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 const phrases = [
     { text: "한국어를 배우고 싶어요!", lang: "🇰🇷 Korean" },
@@ -36,7 +37,7 @@ export default function Hero() {
         <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden hero-grid">
             {/* Background Effects */}
             <div className="hero-glow -top-40 -left-20" />
-            <div className="hero-glow -bottom-40 -right-20 opacity-50" style={{ background: "radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)" }} />
+            <div className="hero-glow -bottom-40 -right-20 opacity-50" style={{ background: "radial-gradient(circle, rgba(255, 140, 66, 0.08) 0%, transparent 70%)" }} />
 
             <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-16 items-center relative z-10">
                 {/* Left: Copy */}
@@ -60,12 +61,12 @@ export default function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4">
-                        <button className="btn-primary text-base !py-3.5 !px-8 animate-pulse-glow">
+                        <Link href="/login" className="btn-primary text-base !py-3.5 !px-8 animate-pulse-glow">
                             무료로 시작하기 →
-                        </button>
-                        <button className="btn-secondary text-base !py-3.5 !px-8">
+                        </Link>
+                        <Link href="/dashboard/chat" className="btn-secondary text-base !py-3.5 !px-8">
                             데모 체험하기
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Micro Stats */}
