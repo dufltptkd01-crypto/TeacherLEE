@@ -105,9 +105,9 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="h-[calc(100dvh-56px-76px)] lg:h-screen flex flex-col relative">
+        <div className="h-[calc(100dvh-56px-84px)] lg:h-screen flex flex-col relative">
             {/* Chat Header */}
-            <div className="shrink-0 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50 px-4 lg:px-6 py-3 flex items-center gap-3">
+            <div className="shrink-0 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50 px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-lg">
                     🤖
                 </div>
@@ -122,7 +122,7 @@ export default function ChatPage() {
                 </div>
 
                 {/* Subject Selector */}
-                <div className="flex gap-1">
+                <div className="hidden sm:flex gap-1">
                     {subjects.map((s) => (
                         <button
                             key={s.id}
@@ -137,11 +137,25 @@ export default function ChatPage() {
                     ))}
                 </div>
 
-                <div className="flex gap-2">
-                    <button className="w-9 h-9 rounded-full glass flex items-center justify-center text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+                <div className="sm:hidden">
+                    <select
+                        value={selectedSubject}
+                        onChange={(e) => setSelectedSubject(e.target.value)}
+                        className="h-10 rounded-xl border border-[var(--border)] bg-[var(--bg-primary)] px-2 text-xs text-[var(--text-secondary)]"
+                    >
+                        {subjects.map((s) => (
+                            <option key={s.id} value={s.id}>
+                                {s.flag} {s.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="flex gap-1.5">
+                    <button className="w-11 h-11 rounded-full glass flex items-center justify-center text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                         📊
                     </button>
-                    <button className="w-9 h-9 rounded-full glass flex items-center justify-center text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+                    <button className="w-11 h-11 rounded-full glass flex items-center justify-center text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                         ⚙️
                     </button>
                 </div>
@@ -197,12 +211,12 @@ export default function ChatPage() {
             </div>
 
             {/* Quick Replies */}
-            <div className="shrink-0 px-4 lg:px-6 py-2 flex gap-2 overflow-x-auto">
+            <div className="shrink-0 px-3 sm:px-4 lg:px-6 py-2 flex gap-2 overflow-x-auto no-scrollbar">
                 {quickReplies.map((qr) => (
                     <button
                         key={qr}
                         onClick={() => sendMessage(qr)}
-                        className="shrink-0 glass rounded-full px-4 py-2 text-xs text-[var(--text-secondary)] hover:text-[var(--primary-light)] hover:border-[var(--primary)]/50 transition-all whitespace-nowrap"
+                        className="shrink-0 glass rounded-full min-h-11 px-4 py-2 text-xs text-[var(--text-secondary)] hover:text-[var(--primary-light)] hover:border-[var(--primary)]/50 transition-all whitespace-nowrap"
                     >
                         {qr}
                     </button>
@@ -210,9 +224,9 @@ export default function ChatPage() {
             </div>
 
             {/* Input */}
-            <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg-secondary)]/30 px-4 lg:px-6 py-4">
+            <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg-secondary)]/30 px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
                 <div className="flex gap-2 items-end max-w-4xl mx-auto">
-                    <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-lg text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors shrink-0">
+                    <button className="w-11 h-11 rounded-full glass flex items-center justify-center text-lg text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors shrink-0">
                         🎤
                     </button>
                     <div className="flex-1 relative">
@@ -227,13 +241,13 @@ export default function ChatPage() {
                             }}
                             placeholder="메시지를 입력하세요... (Enter로 전송)"
                             rows={1}
-                            className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl px-4 py-3 pr-12 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--primary)] transition-colors resize-none"
+                            className="w-full min-h-11 max-h-28 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl px-4 py-3 pr-12 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--primary)] transition-colors resize-none"
                         />
                     </div>
                     <button
                         onClick={() => sendMessage(input)}
                         disabled={isTyping}
-                        className="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white hover:bg-[var(--primary-light)] transition-colors shrink-0 disabled:opacity-50"
+                        className="w-11 h-11 rounded-full bg-[var(--primary)] flex items-center justify-center text-white hover:bg-[var(--primary-light)] transition-colors shrink-0 disabled:opacity-50"
                     >
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M5 12l7-4-7-4v8z" fill="currentColor" />

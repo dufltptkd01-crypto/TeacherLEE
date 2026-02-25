@@ -84,10 +84,10 @@ export default function DashboardLayout({
             </aside>
 
             {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 glass-strong border-b border-[var(--border)] flex items-center px-4">
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 glass-strong border-b border-[var(--border)] flex items-center px-3 pt-[max(0px,env(safe-area-inset-top))]">
                 <button
                     onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="text-[var(--text-primary)] p-2"
+                    className="text-[var(--text-primary)] h-11 w-11 flex items-center justify-center rounded-xl"
                 >
                     <svg
                         width="20"
@@ -147,22 +147,22 @@ export default function DashboardLayout({
             )}
 
             {/* Main Content */}
-            <main className="flex-1 min-w-0 lg:ml-0 mt-14 lg:mt-0 pb-[76px] lg:pb-0">{children}</main>
+            <main className="flex-1 min-w-0 lg:ml-0 mt-14 lg:mt-0 pb-[84px] lg:pb-0">{children}</main>
 
             {/* Mobile Bottom Nav */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 glass-strong border-t border-[var(--border)] px-2 py-2 pb-[max(8px,env(safe-area-inset-bottom))]">
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 glass-strong border-t border-[var(--border)] px-2 pt-2 pb-[max(10px,env(safe-area-inset-bottom))]">
                 <div className="grid grid-cols-4 gap-1">
                     {navItems.slice(0, 4).map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg text-center ${pathname === item.href
+                            className={`flex flex-col items-center justify-center gap-1 min-h-11 py-1.5 px-1 rounded-lg text-center ${pathname === item.href
                                     ? "text-[var(--primary-light)] bg-[var(--primary)]/10"
                                     : "text-[var(--text-muted)]"
                                 }`}
                         >
                             <span className="text-lg leading-none">{item.icon}</span>
-                            <span className="text-[10px] font-medium leading-none">{item.label}</span>
+                            <span className="text-[10px] font-medium leading-none tracking-[-0.01em]">{item.label}</span>
                         </Link>
                     ))}
                 </div>

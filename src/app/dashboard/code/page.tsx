@@ -67,9 +67,9 @@ export default function CodePage() {
     };
 
     return (
-        <div className="h-[calc(100dvh-56px-76px)] lg:h-screen flex flex-col">
+        <div className="h-[calc(100dvh-56px-84px)] lg:h-screen flex flex-col">
             {/* Top Bar */}
-            <div className="shrink-0 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50 px-4 lg:px-6 py-3 flex items-center gap-3">
+            <div className="shrink-0 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50 px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
                 <span className="text-lg">💻</span>
                 <h1 className="text-sm font-semibold text-[var(--text-primary)] flex-1">
                     JS 배열 필터링
@@ -82,12 +82,12 @@ export default function CodePage() {
                         +10 XP
                     </span>
                 </div>
-                <button className="glass rounded-lg px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                <button className="hidden sm:inline-flex glass rounded-lg px-3 py-2 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors min-h-11 items-center">
                     💡 힌트
                 </button>
                 <button
                     onClick={requestReview}
-                    className="btn-primary text-xs !py-1.5 !px-4"
+                    className="btn-primary text-xs !py-2 !px-3 sm:!px-4 min-h-11"
                 >
                     🤖 AI 리뷰
                 </button>
