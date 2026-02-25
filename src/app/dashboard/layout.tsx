@@ -147,23 +147,25 @@ export default function DashboardLayout({
             )}
 
             {/* Main Content */}
-            <main className="flex-1 min-w-0 lg:ml-0 mt-14 lg:mt-0">{children}</main>
+            <main className="flex-1 min-w-0 lg:ml-0 mt-14 lg:mt-0 pb-[76px] lg:pb-0">{children}</main>
 
             {/* Mobile Bottom Nav */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 glass-strong border-t border-[var(--border)] flex justify-around py-2">
-                {navItems.slice(0, 5).map((item) => (
-                    <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg text-center ${pathname === item.href
-                                ? "text-[var(--primary-light)]"
-                                : "text-[var(--text-muted)]"
-                            }`}
-                    >
-                        <span className="text-lg">{item.icon}</span>
-                        <span className="text-[10px] font-medium">{item.label}</span>
-                    </Link>
-                ))}
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 glass-strong border-t border-[var(--border)] px-2 py-2 pb-[max(8px,env(safe-area-inset-bottom))]">
+                <div className="grid grid-cols-4 gap-1">
+                    {navItems.slice(0, 4).map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg text-center ${pathname === item.href
+                                    ? "text-[var(--primary-light)] bg-[var(--primary)]/10"
+                                    : "text-[var(--text-muted)]"
+                                }`}
+                        >
+                            <span className="text-lg leading-none">{item.icon}</span>
+                            <span className="text-[10px] font-medium leading-none">{item.label}</span>
+                        </Link>
+                    ))}
+                </div>
             </nav>
         </div>
     );

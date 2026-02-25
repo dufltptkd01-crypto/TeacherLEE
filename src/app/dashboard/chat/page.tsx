@@ -105,7 +105,7 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="h-screen lg:h-screen flex flex-col relative">
+        <div className="h-[calc(100dvh-56px-76px)] lg:h-screen flex flex-col relative">
             {/* Chat Header */}
             <div className="shrink-0 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50 px-4 lg:px-6 py-3 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white text-lg">
@@ -210,7 +210,7 @@ export default function ChatPage() {
             </div>
 
             {/* Input */}
-            <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg-secondary)]/30 px-4 lg:px-6 py-4 mb-14 lg:mb-0">
+            <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg-secondary)]/30 px-4 lg:px-6 py-4">
                 <div className="flex gap-2 items-end max-w-4xl mx-auto">
                     <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-lg text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors shrink-0">
                         🎤

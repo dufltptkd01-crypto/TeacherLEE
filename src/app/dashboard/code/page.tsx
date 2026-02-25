@@ -67,7 +67,7 @@ export default function CodePage() {
     };
 
     return (
-        <div className="h-screen lg:h-screen flex flex-col">
+        <div className="h-[calc(100dvh-56px-76px)] lg:h-screen flex flex-col">
             {/* Top Bar */}
             <div className="shrink-0 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50 px-4 lg:px-6 py-3 flex items-center gap-3">
                 <span className="text-lg">💻</span>
@@ -213,7 +213,7 @@ export default function CodePage() {
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 mb-14 lg:mb-0">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
                         {showReview ? (
                             <>
                                 {codeReviewFeedback.map((f, i) => (
