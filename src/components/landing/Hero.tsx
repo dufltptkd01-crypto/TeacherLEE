@@ -26,8 +26,10 @@ export default function Hero() {
         } else if (isDeleting && charIndex > 0) {
             timeout = setTimeout(() => setCharIndex((c) => c - 1), 30);
         } else if (isDeleting && charIndex === 0) {
-            setIsDeleting(false);
-            setPhraseIndex((i) => (i + 1) % phrases.length);
+            timeout = setTimeout(() => {
+                setIsDeleting(false);
+                setPhraseIndex((i) => (i + 1) % phrases.length);
+            }, 0);
         }
 
         return () => clearTimeout(timeout);

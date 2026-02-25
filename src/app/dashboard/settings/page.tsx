@@ -1,6 +1,6 @@
 export default function SettingsPage() {
     return (
-        <div className="p-6 lg:p-8 space-y-6 pb-24 lg:pb-8 max-w-2xl">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 pb-6 lg:pb-8 max-w-2xl">
             <div>
                 <h1 className="text-2xl font-bold text-[var(--text-primary)]">⚙️ 설정</h1>
                 <p className="text-sm text-[var(--text-secondary)] mt-1">
@@ -13,7 +13,7 @@ export default function SettingsPage() {
                 <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                     👤 프로필
                 </h2>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-light)] flex items-center justify-center text-white text-xl font-bold">
                         U
                     </div>

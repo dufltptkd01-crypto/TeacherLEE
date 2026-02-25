@@ -53,7 +53,7 @@ export default function InteractiveDemo() {
     useEffect(() => {
         if (!started) return;
 
-        demoConversation.forEach((msg, i) => {
+        demoConversation.forEach((msg) => {
             setTimeout(() => {
                 setMessages((prev) => [...prev, msg]);
             }, msg.delay);

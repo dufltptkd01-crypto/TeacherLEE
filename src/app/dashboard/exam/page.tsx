@@ -55,7 +55,7 @@ export default function ExamPage() {
     const [selected, setSelected] = useState<string | null>(null);
 
     return (
-        <div className="p-6 lg:p-8 space-y-6 pb-24 lg:pb-8">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 pb-6 lg:pb-8">
             <div>
                 <h1 className="text-2xl font-bold text-[var(--text-primary)]">📝 시험 대비</h1>
                 <p className="text-sm text-[var(--text-secondary)] mt-1">
@@ -66,10 +66,15 @@ export default function ExamPage() {
             {/* Exam Cards */}
             <div className="grid sm:grid-cols-2 gap-4">
                 {exams.map((exam) => (
-                    <button
+                    <div
                         key={exam.id}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setSelected(exam.id)}
-                        className={`glass rounded-2xl p-6 text-left card-hover transition-all ${selected === exam.id
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") setSelected(exam.id);
+                        }}
+                        className={`glass rounded-2xl p-5 sm:p-6 text-left card-hover transition-all cursor-pointer ${selected === exam.id
                                 ? "ring-2 ring-[var(--primary)]"
                                 : ""
                             }`}
@@ -94,7 +99,7 @@ export default function ExamPage() {
                         >
                             모의시험 시작 →
                         </button>
-                    </button>
+                    </div>
                 ))}
             </div>
 

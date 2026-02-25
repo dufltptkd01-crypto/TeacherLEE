@@ -12,7 +12,7 @@ export default function ReportPage() {
     const maxMinutes = Math.max(...weekData.map((d) => d.minutes));
 
     return (
-        <div className="p-6 lg:p-8 space-y-6 pb-24 lg:pb-8">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 pb-6 lg:pb-8">
             <div>
                 <h1 className="text-2xl font-bold text-[var(--text-primary)]">
                     📈 학습 리포트
@@ -50,21 +50,26 @@ export default function ReportPage() {
                 <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-6">
                     📊 일별 학습 시간
                 </h2>
-                <div className="flex items-end gap-3 h-40">
-                    {weekData.map((d) => (
-                        <div key={d.day} className="flex-1 flex flex-col items-center gap-2">
-                            <span className="text-[10px] text-[var(--text-muted)]">{d.minutes}분</span>
-                            <div className="w-full max-w-10 rounded-t-lg bg-[var(--bg-primary)] relative" style={{ height: "100%" }}>
+                <div className="overflow-x-auto">
+                    <div className="flex items-end gap-3 h-40 min-w-[420px]">
+                        {weekData.map((d) => (
+                            <div key={d.day} className="flex-1 flex flex-col items-center gap-2">
+                                <span className="text-[10px] text-[var(--text-muted)]">{d.minutes}분</span>
                                 <div
-                                    className="absolute bottom-0 left-0 right-0 rounded-t-lg bg-gradient-to-t from-[var(--primary)] to-[var(--primary-light)] transition-all"
-                                    style={{
-                                        height: maxMinutes > 0 ? `${(d.minutes / maxMinutes) * 100}%` : "0%",
-                                    }}
-                                />
+                                    className="w-full max-w-10 rounded-t-lg bg-[var(--bg-primary)] relative"
+                                    style={{ height: "100%" }}
+                                >
+                                    <div
+                                        className="absolute bottom-0 left-0 right-0 rounded-t-lg bg-gradient-to-t from-[var(--primary)] to-[var(--primary-light)] transition-all"
+                                        style={{
+                                            height: maxMinutes > 0 ? `${(d.minutes / maxMinutes) * 100}%` : "0%",
+                                        }}
+                                    />
+                                </div>
+                                <span className="text-xs text-[var(--text-muted)]">{d.day}</span>
                             </div>
-                            <span className="text-xs text-[var(--text-muted)]">{d.day}</span>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
 

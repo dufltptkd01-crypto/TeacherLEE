@@ -33,9 +33,9 @@ export default function DashboardPage() {
     const targetXP = 50;
 
     return (
-        <div className="p-6 lg:p-8 space-y-6 pb-24 lg:pb-8">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 pb-6 lg:pb-8">
             {/* Top Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-[var(--text-primary)]">
                         안녕하세요! 👋
@@ -44,7 +44,7 @@ export default function DashboardPage() {
                         오늘도 열심히 공부해봐요
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3">
                     <div className="glass rounded-full px-4 py-2 flex items-center gap-2 text-sm">
                         <span>🔥</span>
                         <span className="font-bold text-[var(--accent)]">12</span>
@@ -101,7 +101,7 @@ export default function DashboardPage() {
                             {todayMissions.map((m) => (
                                 <div
                                     key={m.id}
-                                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${m.done
+                                    className={`flex items-center gap-2 sm:gap-3 p-3 rounded-xl border transition-all ${m.done
                                             ? "border-[var(--secondary)]/30 bg-[var(--secondary)]/5"
                                             : "border-[var(--border)] hover:border-[var(--border-light)]"
                                         }`}
@@ -123,13 +123,13 @@ export default function DashboardPage() {
                                     >
                                         {m.title}
                                     </span>
-                                    <span className="text-xs text-[var(--accent)] font-semibold">
+                                    <span className="text-[11px] sm:text-xs text-[var(--accent)] font-semibold">
                                         +{m.xp} XP
                                     </span>
                                     {!m.done && (
                                         <Link
                                             href="/dashboard/chat"
-                                            className="text-xs text-[var(--primary-light)] font-medium hover:underline"
+                                            className="text-[11px] sm:text-xs text-[var(--primary-light)] font-medium hover:underline whitespace-nowrap"
                                         >
                                             시작 →
                                         </Link>
