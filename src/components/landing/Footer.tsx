@@ -5,9 +5,10 @@ export default function Footer() {
             <div className="py-20 text-center relative overflow-hidden">
                 <div className="hero-glow left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30" />
                 <div className="relative z-10 max-w-2xl mx-auto px-6">
-                    <h2 className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-4">
+                    <h2 className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-4 leading-tight break-keep">
                         지금 시작하면{" "}
-                        <span className="gradient-text">Premium 7일 무료</span>
+                        <span className="gradient-text whitespace-nowrap">Premium 7일</span>{" "}
+                        <span className="gradient-text">무료</span>
                     </h2>
                     <p className="text-[var(--text-secondary)] mb-8">
                         5,000명의 학습자와 함께 AI 선생님과 배워보세요

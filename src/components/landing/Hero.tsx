@@ -49,9 +49,8 @@ export default function Hero() {
                         <span className="text-[var(--primary)] font-medium">AI 기반 맞춤형 교육 플랫폼</span>
                     </div>
 
-                    <h1 className="text-5xl lg:text-6xl font-bold leading-tight tracking-tight whitespace-nowrap">
-                        <span className="text-[var(--text-primary)]">AI가 당신만의</span>
-                        <br />
+                    <h1 className="text-[clamp(2.1rem,10vw,3.75rem)] font-bold leading-[1.12] tracking-tight break-keep max-w-[14ch] sm:max-w-none">
+                        <span className="text-[var(--text-primary)]">AI가 당신만의</span>{" "}
                         <span className="gradient-text">선생님</span>
                         <span className="text-[var(--text-primary)]">이 되어드립니다</span>
                     </h1>
