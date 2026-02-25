@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { login, signup, signInWithGoogle, signInWithApple } from "./actions";
+import { login, signup, signInWithGoogle } from "./actions";
 
 export default function LoginPage() {
     const [isLogin, setIsLogin] = useState(true);
@@ -75,15 +75,7 @@ export default function LoginPage() {
                                 Google로 계속하기
                             </button>
                         </form>
-                        <form action={signInWithApple}>
-                            <button
-                                type="submit"
-                                className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all bg-black text-white hover:bg-gray-900"
-                            >
-                                <span className="text-base">🍎</span>
-                                Apple로 계속하기
-                            </button>
-                        </form>
+
                     </div>
 
                     {/* Divider */}
