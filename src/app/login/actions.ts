@@ -45,13 +45,22 @@ export async function signup(formData: FormData) {
     redirect("/onboarding");
 }
 
-export async function signInWithGoogle() {
+function getOAuthRedirectTo() {
+    const baseUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "http://localhost:3000";
+
+    return `${baseUrl.replace(/\/$/, "")}/auth/callback`;
+}
+
+async function signInWithOAuthProvider(provider: "google" | "apple") {
     const supabase = await createClient();
 
     const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider,
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin : ""}/auth/callback`,
+            redirectTo: getOAuthRedirectTo(),
         },
     });
 
@@ -62,6 +71,14 @@ export async function signInWithGoogle() {
     if (data.url) {
         redirect(data.url);
     }
+}
+
+export async function signInWithGoogle() {
+    await signInWithOAuthProvider("google");
+}
+
+export async function signInWithApple() {
+    await signInWithOAuthProvider("apple");
 }
 
 export async function signOut() {

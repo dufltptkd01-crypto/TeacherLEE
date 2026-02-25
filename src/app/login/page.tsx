@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { login, signup, signInWithGoogle } from "./actions";
+import { login, signup, signInWithGoogle, signInWithApple } from "./actions";
 
 export default function LoginPage() {
     const [isLogin, setIsLogin] = useState(true);
+    const error =
+        typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("error")
+            : null;
 
     return (
         <div className="min-h-screen flex items-center justify-center relative hero-grid px-6">
@@ -54,6 +58,12 @@ export default function LoginPage() {
                         </button>
                     </div>
 
+                    {error && (
+                        <div className="rounded-xl border border-red-300/50 bg-red-50 px-3 py-2 text-xs text-red-700">
+                            로그인 오류: {decodeURIComponent(error)}
+                        </div>
+                    )}
+
                     {/* Social Login */}
                     <div className="space-y-3">
                         <form action={signInWithGoogle}>
@@ -65,12 +75,15 @@ export default function LoginPage() {
                                 Google로 계속하기
                             </button>
                         </form>
-                        <button
-                            className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all bg-black text-white hover:bg-gray-900"
-                        >
-                            <span className="text-base">🍎</span>
-                            Apple로 계속하기
-                        </button>
+                        <form action={signInWithApple}>
+                            <button
+                                type="submit"
+                                className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all bg-black text-white hover:bg-gray-900"
+                            >
+                                <span className="text-base">🍎</span>
+                                Apple로 계속하기
+                            </button>
+                        </form>
                     </div>
 
                     {/* Divider */}
