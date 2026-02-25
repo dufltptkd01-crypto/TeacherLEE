@@ -85,10 +85,10 @@ export default function Footer() {
                         <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Legal</h4>
                         <ul className="space-y-2.5">
                             {[
-                                { label: "이용약관", href: "/login" },
-                                { label: "개인정보처리방침", href: "/login" },
-                                { label: "쿠키 정책", href: "/login" },
-                                { label: "환불 정책", href: "/login" },
+                                { label: "이용약관", href: "/legal/terms" },
+                                { label: "개인정보처리방침", href: "/legal/privacy" },
+                                { label: "쿠키 정책", href: "/legal/cookies" },
+                                { label: "환불 정책", href: "/legal/refund" },
                             ].map((item) => (
                                 <li key={item.label}>
                                     <a href={item.href} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
