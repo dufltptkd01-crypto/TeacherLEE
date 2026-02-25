@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
     return (
         <footer className="border-t border-[var(--border)]">
@@ -13,9 +15,9 @@ export default function Footer() {
                     <p className="text-[var(--text-secondary)] mb-8">
                         5,000명의 학습자와 함께 AI 선생님과 배워보세요
                     </p>
-                    <button className="btn-primary text-lg !py-4 !px-10 animate-pulse-glow">
+                    <Link href="/login" className="btn-primary inline-flex text-lg !py-4 !px-10 animate-pulse-glow">
                         무료로 시작하기 →
-                    </button>
+                    </Link>
                     <p className="text-xs text-[var(--text-muted)] mt-4">
                         신용카드 불필요 · 3분 만에 시작 · 언제든 해지
                     </p>
@@ -44,10 +46,15 @@ export default function Footer() {
                     <div>
                         <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Product</h4>
                         <ul className="space-y-2.5">
-                            {["AI 대화 학습", "코딩 학습", "시험 대비", "요금제"].map((item) => (
-                                <li key={item}>
-                                    <a href="#" className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
-                                        {item}
+                            {[
+                                { label: "AI 대화 학습", href: "/dashboard/chat" },
+                                { label: "코딩 학습", href: "/dashboard/code" },
+                                { label: "시험 대비", href: "/dashboard/exam" },
+                                { label: "요금제", href: "#pricing" },
+                            ].map((item) => (
+                                <li key={item.label}>
+                                    <a href={item.href} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+                                        {item.label}
                                     </a>
                                 </li>
                             ))}
@@ -58,10 +65,15 @@ export default function Footer() {
                     <div>
                         <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Company</h4>
                         <ul className="space-y-2.5">
-                            {["About Us", "Blog", "Careers", "Contact"].map((item) => (
-                                <li key={item}>
-                                    <a href="#" className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
-                                        {item}
+                            {[
+                                { label: "About Us", href: "#features" },
+                                { label: "Blog", href: "/login" },
+                                { label: "Careers", href: "/login" },
+                                { label: "Contact", href: "mailto:dufltptkd01@gmail.com" },
+                            ].map((item) => (
+                                <li key={item.label}>
+                                    <a href={item.href} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+                                        {item.label}
                                     </a>
                                 </li>
                             ))}
@@ -72,10 +84,15 @@ export default function Footer() {
                     <div>
                         <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Legal</h4>
                         <ul className="space-y-2.5">
-                            {["이용약관", "개인정보처리방침", "쿠키 정책", "환불 정책"].map((item) => (
-                                <li key={item}>
-                                    <a href="#" className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
-                                        {item}
+                            {[
+                                { label: "이용약관", href: "/login" },
+                                { label: "개인정보처리방침", href: "/login" },
+                                { label: "쿠키 정책", href: "/login" },
+                                { label: "환불 정책", href: "/login" },
+                            ].map((item) => (
+                                <li key={item.label}>
+                                    <a href={item.href} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+                                        {item.label}
                                     </a>
                                 </li>
                             ))}
@@ -92,14 +109,16 @@ export default function Footer() {
                     </p>
                     <div className="flex items-center gap-4">
                         {[
-                            { label: "Twitter", icon: "𝕏" },
-                            { label: "YouTube", icon: "▶" },
-                            { label: "Discord", icon: "💬" },
-                            { label: "GitHub", icon: "⌨" },
+                            { label: "Twitter", icon: "𝕏", href: "https://x.com" },
+                            { label: "YouTube", icon: "▶", href: "https://youtube.com" },
+                            { label: "Discord", icon: "💬", href: "https://discord.com" },
+                            { label: "GitHub", icon: "⌨", href: "https://github.com/dufltptkd01-crypto/TeacherLEE" },
                         ].map((social) => (
                             <a
                                 key={social.label}
-                                href="#"
+                                href={social.href}
+                                target="_blank"
+                                rel="noreferrer"
                                 className="w-8 h-8 rounded-full glass flex items-center justify-center text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--primary)]/50 transition-all"
                                 title={social.label}
                             >

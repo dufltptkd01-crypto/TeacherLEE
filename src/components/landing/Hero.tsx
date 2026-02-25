@@ -142,9 +142,9 @@ export default function Hero() {
                                 <span>🎤</span>
                                 <span>메시지를 입력하세요...</span>
                             </div>
-                            <button className="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white hover:bg-[var(--primary-light)] transition-colors">
+                            <Link href="/login" className="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white hover:bg-[var(--primary-light)] transition-colors">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12l7-4-7-4v8z" fill="currentColor" /></svg>
-                            </button>
+                            </Link>
                         </div>
 
                         {/* Decorative Glow */}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 
 const plans = [
@@ -157,14 +158,15 @@ export default function Pricing() {
                             </ul>
 
                             {/* CTA */}
-                            <button
-                                className={`w-full py-3 rounded-full font-semibold text-sm transition-all ${plan.badge === "MOST POPULAR"
+                            <Link
+                                href="/login"
+                                className={`w-full py-3 rounded-full font-semibold text-sm transition-all inline-flex ${plan.badge === "MOST POPULAR"
                                         ? "btn-primary justify-center"
                                         : "btn-secondary justify-center"
                                     }`}
                             >
                                 {plan.price.monthly === "0" ? "무료로 시작" : "시작하기"}
-                            </button>
+                            </Link>
                         </div>
                     ))}
                 </div>

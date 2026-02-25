@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 
 const demoConversation = [
@@ -142,9 +143,9 @@ export default function InteractiveDemo() {
                         {/* Input */}
                         <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--bg-secondary)]/30">
                             <div className="flex gap-2">
-                                <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors">
+                                <Link href="/login" className="w-10 h-10 rounded-full glass flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors">
                                     🎤
-                                </button>
+                                </Link>
                                 <input
                                     type="text"
                                     value={inputText}
@@ -152,11 +153,11 @@ export default function InteractiveDemo() {
                                     placeholder="메시지를 입력하세요... (데모)"
                                     className="flex-1 bg-[var(--bg-primary)] rounded-full px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none border border-[var(--border)] focus:border-[var(--primary)] transition-colors"
                                 />
-                                <button className="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white hover:bg-[var(--primary-light)] transition-colors">
+                                <Link href="/login" className="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white hover:bg-[var(--primary-light)] transition-colors">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M5 12l7-4-7-4v8z" fill="currentColor" />
                                     </svg>
-                                </button>
+                                </Link>
                             </div>
                             <p className="text-center text-xs text-[var(--text-muted)] mt-3">
                                 💡 정식 버전에서는 음성 대화, 코드 리뷰 등 더 많은 기능을 사용할 수 있어요
@@ -166,9 +167,9 @@ export default function InteractiveDemo() {
 
                     {/* CTA below demo */}
                     <div className="text-center mt-8">
-                        <button className="btn-primary text-base !py-3.5 !px-8">
+                        <Link href="/login" className="btn-primary inline-flex text-base !py-3.5 !px-8">
                             무료로 시작하기 →
-                        </button>
+                        </Link>
                         <p className="text-xs text-[var(--text-muted)] mt-3">
                             신용카드 불필요 · 3분 만에 시작
                         </p>
