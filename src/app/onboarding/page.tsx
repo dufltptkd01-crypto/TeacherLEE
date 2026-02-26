@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { setOnboardingPlan, type OnboardingPlan } from "@/lib/learning/clientStore";
 
 const languages = [
     { id: "korean", flag: "🇰🇷", name: "한국어", eng: "Korean" },
@@ -98,10 +99,10 @@ export default function OnboardingPage() {
         step === 3;
 
     const handleStartLearning = () => {
-        const onboardingPlan = {
+        const onboardingPlan: OnboardingPlan = {
             subjects: selectedSubjects.map((s) => ({
                 id: s.id,
-                type: s.type,
+                type: s.type as "language" | "programming",
                 title: s.title,
                 icon: s.icon,
                 level: selectedLevels[s.id] || "beginner",
@@ -110,7 +111,7 @@ export default function OnboardingPage() {
             createdAt: new Date().toISOString(),
         };
 
-        localStorage.setItem("teacherlee:onboarding", JSON.stringify(onboardingPlan));
+        setOnboardingPlan(onboardingPlan);
         router.push("/dashboard");
     };
 

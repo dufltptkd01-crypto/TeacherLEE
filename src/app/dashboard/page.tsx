@@ -2,20 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-
-type PlanSubject = {
-    id: string;
-    type: "language" | "programming";
-    title: string;
-    icon: string;
-    level: string;
-};
-
-type OnboardingPlan = {
-    subjects: PlanSubject[];
-    goals: string[];
-    createdAt: string;
-};
+import { getOnboardingPlan, getStudyEvents } from "@/lib/learning/clientStore";
 
 const levelLabel: Record<string, string> = {
     beginner: "완전 초보",
@@ -24,48 +11,19 @@ const levelLabel: Record<string, string> = {
     advanced: "고급",
 };
 
-const defaultMissions = [
-    { id: 1, title: "한국어 대화 연습 10분", subject: "🇰🇷", done: false, xp: 15 },
-    { id: 2, title: "JS 배열 메서드 퀴즈", subject: "⚡", done: true, xp: 10 },
-    { id: 3, title: "TOPIK 읽기 모의고사 1세트", subject: "📝", done: false, xp: 20 },
-    { id: 4, title: "HTML 폼 태그 실습", subject: "🌐", done: false, xp: 12 },
-];
 
-const weeklyStats = [
-    { label: "학습 시간", value: "4.2h", change: "+12%", up: true },
-    { label: "AI 대화", value: "23회", change: "+8%", up: true },
-    { label: "코드 제출", value: "12회", change: "+15%", up: true },
-    { label: "정확도", value: "78%", change: "+5%", up: true },
-];
-
-const defaultCourses = [
-    { name: "한국어 B1", flag: "🇰🇷", progress: 68, level: "B1" },
-    { name: "JavaScript 중급", flag: "⚡", progress: 42, level: "중급" },
-    { name: "TOPIK II 대비", flag: "📝", progress: 25, level: "시험" },
-];
-
-const recentFeedback = [
-    { type: "warning", text: "조사 사용 오류 빈발 — '을/를' 혼동 3회", subject: "🇰🇷" },
-    { type: "success", text: "어휘력 향상 추세 — 이번 주 +47 단어", subject: "🇰🇷" },
-    { type: "info", text: "for 루프 활용도 우수 — 다음: 배열 메서드", subject: "⚡" },
-];
 
 export default function DashboardPage() {
-    const [plan] = useState<OnboardingPlan | null>(() => {
-        if (typeof window === "undefined") return null;
-        const raw = localStorage.getItem("teacherlee:onboarding");
-        if (!raw) return null;
-        try {
-            return JSON.parse(raw);
-        } catch {
-            return null;
-        }
-    });
-    const totalXP = 34;
+    const [plan] = useState(() => getOnboardingPlan());
+    const [events] = useState(() => getStudyEvents());
+    const [nowTs] = useState(() => Date.now());
+
+    const totalXP = useMemo(() => events.length * 5, [events]);
     const targetXP = 50;
 
     const activeCourses = useMemo(() => {
-        if (!plan?.subjects?.length) return defaultCourses;
+        if (!plan?.subjects?.length) return [];
+
 
         return plan.subjects.map((s, index) => ({
             name: `${s.title} ${levelLabel[s.level] ?? "입문"}`,
@@ -76,7 +34,14 @@ export default function DashboardPage() {
     }, [plan]);
 
     const todayMissions = useMemo(() => {
-        if (!plan?.subjects?.length) return defaultMissions;
+        if (!plan?.subjects?.length) {
+            return [
+                { id: 1, title: "온보딩을 완료하면 맞춤 미션이 생성됩니다", subject: "🧭", done: false, xp: 0 },
+            ];
+        }
+
+        const today = new Date().toDateString();
+        const todayEvents = events.filter((e) => new Date(e.at).toDateString() === today);
 
         return plan.subjects.slice(0, 4).map((s, index) => {
             const level = levelLabel[s.level] ?? "입문";
@@ -84,15 +49,34 @@ export default function DashboardPage() {
                 s.type === "programming"
                     ? `${s.title} ${level} 실습 ${index + 1}`
                     : `${s.title} ${level} 회화 연습 10분`;
+            const done = todayEvents.some((e) => e.subject === s.id);
             return {
                 id: index + 1,
                 title,
                 subject: s.icon,
-                done: index === 1,
+                done,
                 xp: 10 + index * 3,
             };
         });
-    }, [plan]);
+    }, [plan, events]);
+
+    const uniqueDays = new Set(events.map((e) => new Date(e.at).toDateString())).size;
+    const totalLifetimeXP = events.length * 5;
+    const weeklyEventCount = events.filter((e) => nowTs - new Date(e.at).getTime() < 7 * 24 * 60 * 60 * 1000).length;
+
+    const weeklyStats = [
+        { label: "학습 시간", value: `${(weeklyEventCount * 8 / 60).toFixed(1)}h`, change: "실측", up: true },
+        { label: "AI 대화", value: `${events.filter((e) => e.kind === "chat").length}회`, change: "실측", up: true },
+        { label: "코드 제출", value: `${events.filter((e) => e.kind === "code").length}회`, change: "실측", up: true },
+        { label: "정확도", value: "측정중", change: "-", up: true },
+    ];
+
+    const recentFeedback = events.length
+        ? [
+            { type: "success", text: `이번 주 학습 활동 ${weeklyEventCount}회 기록됨`, subject: "📈" },
+            { type: "info", text: `가장 최근 학습: ${new Date(events[events.length - 1].at).toLocaleString("ko-KR")}`, subject: "🕒" },
+          ]
+        : [{ type: "info", text: "아직 학습 기록이 없습니다. AI 대화부터 시작해 보세요.", subject: "🧭" }];
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 pb-6 lg:pb-8">
@@ -111,13 +95,13 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3">
                     <div className="glass rounded-full px-4 py-2 flex items-center gap-2 text-sm">
                         <span>🔥</span>
-                        <span className="font-bold text-[var(--accent)]">12</span>
-                        <span className="text-[var(--text-muted)]">일 연속</span>
+                        <span className="font-bold text-[var(--accent)]">{uniqueDays}</span>
+                        <span className="text-[var(--text-muted)]">학습 일수</span>
                     </div>
                     <div className="glass rounded-full px-4 py-2 flex items-center gap-2 text-sm">
                         <span>⭐</span>
-                        <span className="font-bold text-[var(--text-primary)]">1,240</span>
-                        <span className="text-[var(--text-muted)]">XP</span>
+                        <span className="font-bold text-[var(--text-primary)]">{totalLifetimeXP}</span>
+                        <span className="text-[var(--text-muted)]">누적 XP</span>
                     </div>
                 </div>
             </div>
@@ -139,7 +123,7 @@ export default function DashboardPage() {
                     />
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                    {activeCourses.map((c) => (
+                    {activeCourses.length > 0 ? activeCourses.map((c) => (
                         <span
                             key={c.name}
                             className="glass rounded-full px-3 py-1 text-xs flex items-center gap-1.5"
@@ -148,7 +132,9 @@ export default function DashboardPage() {
                             <span className="text-[var(--text-secondary)]">{c.name}</span>
                             <span className="text-[var(--text-muted)]">{c.progress}%</span>
                         </span>
-                    ))}
+                    )) : (
+                        <span className="text-xs text-[var(--text-muted)]">온보딩을 완료하면 과목이 표시됩니다.</span>
+                    )}
                 </div>
             </div>
 

@@ -6,6 +6,21 @@ function getOpenAI() {
     return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
 
+function getFallbackReply(subject: string, latest: string) {
+    const guide =
+        subject === "english"
+            ? "영어"
+            : subject === "japanese"
+                ? "일본어"
+                : subject === "chinese"
+                    ? "중국어"
+                    : subject === "korean"
+                        ? "한국어"
+                        : "프로그래밍";
+
+    return `현재 AI 서버가 잠시 불안정해서 오프라인 가이드 모드로 안내드릴게요.\n\n선택 과목: ${guide}\n입력한 내용: "${latest}"\n\n1) 핵심 표현/개념 3개를 먼저 정리해보세요.\n2) 5분 연습 후 같은 문장(또는 코드)을 한 번 더 작성해보세요.\n3) "다시 채팅"을 누르면 정상 연결 시 상세 피드백을 이어서 드릴게요.`;
+}
+
 const SYSTEM_PROMPT = `You are Teacher Lee (이선생), a friendly, patient, and highly skilled AI language tutor.
 
 CORE TRAITS:
@@ -102,6 +117,16 @@ export async function POST(request: NextRequest) {
                             ? "The student is learning Chinese."
                             : "The student is learning programming.";
 
+        const latest = normalizedMessages[normalizedMessages.length - 1]?.content || "";
+
+        if (!process.env.OPENAI_API_KEY) {
+            return NextResponse.json({
+                message: getFallbackReply(subject, latest),
+                usage: { prompt_tokens: 0, completion_tokens: 0 },
+                fallback: true,
+            });
+        }
+
         const completion = await createWithRetry({
             model: "gpt-4o-mini",
             messages: [
@@ -137,9 +162,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return NextResponse.json({
+            message: getFallbackReply("korean", "연결 복구 중"),
+            usage: { prompt_tokens: 0, completion_tokens: 0 },
+            fallback: true,
+        });
     }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { addStudyEvent, getOnboardingPlan } from "@/lib/learning/clientStore";
 
 interface Message {
     id: number;
@@ -47,6 +48,14 @@ export default function ChatPage() {
         }
     }, [messages, isTyping]);
 
+    useEffect(() => {
+        const plan = getOnboardingPlan();
+        const preferred = plan?.subjects?.find((s) => s.type === "language");
+        if (preferred?.id && ["korean", "english", "japanese", "chinese"].includes(preferred.id)) {
+            setSelectedSubject(preferred.id);
+        }
+    }, []);
+
     const sendMessage = async (text: string) => {
         if (!text.trim() || isTyping) return;
 
@@ -89,6 +98,11 @@ export default function ChatPage() {
                 const data = await res.json();
                 aiText = data.reply || data.message || "죄송합니다, 응답을 처리하지 못했어요.";
                 setConnectionState("ok");
+                addStudyEvent({
+                    kind: "chat",
+                    subject: selectedSubject,
+                    at: new Date().toISOString(),
+                });
             } else {
                 aiText = "⚠️ AI 서비스 연결이 불안정합니다. 다시 시도해주세요.";
                 setConnectionState("unstable");
