@@ -2,8 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 
+function getOpenAIKey() {
+    return (
+        process.env.OPENAI_API_KEY ||
+        process.env.OPENAI_KEY ||
+        process.env.OPENAI_TOKEN ||
+        ""
+    );
+}
+
 function getOpenAI() {
-    return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    return new OpenAI({ apiKey: getOpenAIKey() });
 }
 
 function getFallbackReply(subject: string, latest: string) {
@@ -119,11 +128,12 @@ export async function POST(request: NextRequest) {
 
         const latest = normalizedMessages[normalizedMessages.length - 1]?.content || "";
 
-        if (!process.env.OPENAI_API_KEY) {
+        if (!getOpenAIKey()) {
             return NextResponse.json({
                 message: getFallbackReply(subject, latest),
                 usage: { prompt_tokens: 0, completion_tokens: 0 },
                 fallback: true,
+                reason: "missing_openai_api_key",
             });
         }
 
