@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const languages = [
     { id: "korean", flag: "🇰🇷", name: "한국어", eng: "Korean" },
@@ -32,6 +32,7 @@ const goals = [
 ];
 
 export default function OnboardingPage() {
+    const router = useRouter();
     const [step, setStep] = useState(0);
     const [selectedLangs, setSelectedLangs] = useState<string[]>([]);
     const [selectedProg, setSelectedProg] = useState<string[]>([]);
@@ -95,6 +96,23 @@ export default function OnboardingPage() {
         (step === 1 && selectedSubjects.length > 0 && selectedSubjects.every((s) => !!selectedLevels[s.id])) ||
         (step === 2 && selectedGoals.length > 0) ||
         step === 3;
+
+    const handleStartLearning = () => {
+        const onboardingPlan = {
+            subjects: selectedSubjects.map((s) => ({
+                id: s.id,
+                type: s.type,
+                title: s.title,
+                icon: s.icon,
+                level: selectedLevels[s.id] || "beginner",
+            })),
+            goals: selectedGoals,
+            createdAt: new Date().toISOString(),
+        };
+
+        localStorage.setItem("teacherlee:onboarding", JSON.stringify(onboardingPlan));
+        router.push("/dashboard");
+    };
 
     return (
         <div className="min-h-screen flex items-start sm:items-center justify-center relative hero-grid px-3 sm:px-6 py-8 sm:py-12">
@@ -316,11 +334,12 @@ export default function OnboardingPage() {
                                 다음 →
                             </button>
                         ) : (
-                            <Link href="/dashboard" className="flex-1">
-                                <button className="w-full btn-primary justify-center animate-pulse-glow">
-                                    🚀 학습 시작하기
-                                </button>
-                            </Link>
+                            <button
+                                onClick={handleStartLearning}
+                                className="w-full btn-primary flex-1 justify-center animate-pulse-glow"
+                            >
+                                🚀 학습 시작하기
+                            </button>
                         )}
                     </div>
                 </div>

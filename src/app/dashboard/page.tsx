@@ -1,8 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
-const todayMissions = [
+type PlanSubject = {
+    id: string;
+    type: "language" | "programming";
+    title: string;
+    icon: string;
+    level: string;
+};
+
+type OnboardingPlan = {
+    subjects: PlanSubject[];
+    goals: string[];
+    createdAt: string;
+};
+
+const levelLabel: Record<string, string> = {
+    beginner: "완전 초보",
+    elementary: "초급",
+    intermediate: "중급",
+    advanced: "고급",
+};
+
+const defaultMissions = [
     { id: 1, title: "한국어 대화 연습 10분", subject: "🇰🇷", done: false, xp: 15 },
     { id: 2, title: "JS 배열 메서드 퀴즈", subject: "⚡", done: true, xp: 10 },
     { id: 3, title: "TOPIK 읽기 모의고사 1세트", subject: "📝", done: false, xp: 20 },
@@ -16,7 +38,7 @@ const weeklyStats = [
     { label: "정확도", value: "78%", change: "+5%", up: true },
 ];
 
-const activeCourses = [
+const defaultCourses = [
     { name: "한국어 B1", flag: "🇰🇷", progress: 68, level: "B1" },
     { name: "JavaScript 중급", flag: "⚡", progress: 42, level: "중급" },
     { name: "TOPIK II 대비", flag: "📝", progress: 25, level: "시험" },
@@ -29,8 +51,48 @@ const recentFeedback = [
 ];
 
 export default function DashboardPage() {
+    const [plan] = useState<OnboardingPlan | null>(() => {
+        if (typeof window === "undefined") return null;
+        const raw = localStorage.getItem("teacherlee:onboarding");
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw);
+        } catch {
+            return null;
+        }
+    });
     const totalXP = 34;
     const targetXP = 50;
+
+    const activeCourses = useMemo(() => {
+        if (!plan?.subjects?.length) return defaultCourses;
+
+        return plan.subjects.map((s, index) => ({
+            name: `${s.title} ${levelLabel[s.level] ?? "입문"}`,
+            flag: s.icon,
+            progress: Math.max(18, 72 - index * 14),
+            level: levelLabel[s.level] ?? "입문",
+        }));
+    }, [plan]);
+
+    const todayMissions = useMemo(() => {
+        if (!plan?.subjects?.length) return defaultMissions;
+
+        return plan.subjects.slice(0, 4).map((s, index) => {
+            const level = levelLabel[s.level] ?? "입문";
+            const title =
+                s.type === "programming"
+                    ? `${s.title} ${level} 실습 ${index + 1}`
+                    : `${s.title} ${level} 회화 연습 10분`;
+            return {
+                id: index + 1,
+                title,
+                subject: s.icon,
+                done: index === 1,
+                xp: 10 + index * 3,
+            };
+        });
+    }, [plan]);
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 pb-6 lg:pb-8">
@@ -41,7 +103,9 @@ export default function DashboardPage() {
                         안녕하세요! 👋
                     </h1>
                     <p className="text-sm text-[var(--text-secondary)]">
-                        오늘도 열심히 공부해봐요
+                        {plan?.subjects?.length
+                            ? `선택한 ${plan.subjects.length}개 과목 기준으로 오늘 미션을 준비했어요`
+                            : "오늘도 열심히 공부해봐요"}
                     </p>
                 </div>
                 <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3">
