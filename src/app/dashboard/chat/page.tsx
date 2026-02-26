@@ -37,6 +37,8 @@ export default function ChatPage() {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [selectedSubject, setSelectedSubject] = useState("korean");
+    const [lastFailedText, setLastFailedText] = useState<string | null>(null);
+    const [connectionState, setConnectionState] = useState<"ok" | "unstable">("ok");
     const chatRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -59,11 +61,16 @@ export default function ChatPage() {
         setMessages(updatedMessages);
         setInput("");
         setIsTyping(true);
+        setLastFailedText(null);
 
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 20000);
+
             const res = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                signal: controller.signal,
                 body: JSON.stringify({
                     message: text.trim(),
                     subject: selectedSubject,
@@ -74,13 +81,18 @@ export default function ChatPage() {
                 }),
             });
 
+            clearTimeout(timeout);
+
             let aiText: string;
 
             if (res.ok) {
                 const data = await res.json();
                 aiText = data.reply || data.message || "죄송합니다, 응답을 처리하지 못했어요.";
+                setConnectionState("ok");
             } else {
-                aiText = "⚠️ AI 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.";
+                aiText = "⚠️ AI 서비스 연결이 불안정합니다. 다시 시도해주세요.";
+                setConnectionState("unstable");
+                setLastFailedText(text.trim());
             }
 
             const aiMsg: Message = {
@@ -90,17 +102,19 @@ export default function ChatPage() {
                 timestamp: new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }),
             };
 
-            setIsTyping(false);
             setMessages((prev) => [...prev, aiMsg]);
         } catch {
-            setIsTyping(false);
+            setConnectionState("unstable");
+            setLastFailedText(text.trim());
             const errorMsg: Message = {
                 id: updatedMessages.length + 1,
                 role: "ai",
-                text: "⚠️ 네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.",
+                text: "⚠️ 응답이 지연되거나 연결이 끊겼어요. 아래 '다시 보내기'를 눌러 재시도해 주세요.",
                 timestamp: new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }),
             };
             setMessages((prev) => [...prev, errorMsg]);
+        } finally {
+            setIsTyping(false);
         }
     };
 
@@ -115,9 +129,9 @@ export default function ChatPage() {
                     <div className="text-sm font-semibold text-[var(--text-primary)]">
                         AI Teacher Lee
                     </div>
-                    <div className="text-xs text-[var(--secondary)] flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--secondary)] animate-pulse" />
-                        온라인
+                    <div className={`text-xs flex items-center gap-1 ${connectionState === "ok" ? "text-[var(--secondary)]" : "text-amber-300"}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${connectionState === "ok" ? "bg-[var(--secondary)] animate-pulse" : "bg-amber-300"}`} />
+                        {connectionState === "ok" ? "온라인" : "재연결 중"}
                     </div>
                 </div>
 
@@ -160,6 +174,21 @@ export default function ChatPage() {
                     </button>
                 </div>
             </div>
+
+            {connectionState === "unstable" && (
+                <div className="shrink-0 mx-3 sm:mx-4 lg:mx-6 mt-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-3 py-2 flex items-center justify-between gap-3">
+                    <p className="text-xs text-amber-200">연결이 불안정합니다. 메시지가 누락되면 재전송해 주세요.</p>
+                    {lastFailedText && (
+                        <button
+                            onClick={() => sendMessage(lastFailedText)}
+                            disabled={isTyping}
+                            className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-100 disabled:opacity-50"
+                        >
+                            다시 보내기
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* Messages */}
             <div ref={chatRef} className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4">
