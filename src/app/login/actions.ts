@@ -60,23 +60,14 @@ export async function signup(formData: FormData) {
         redirect("/login?error=" + encodeURIComponent(error.message));
     }
 
-    if (!signUpData.session) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: data.email,
-            password: data.password,
-        });
-
-        if (signInError) {
-            redirect("/login?error=" + encodeURIComponent("회원가입은 완료됐지만 자동 로그인에 실패했습니다. 이메일 인증 후 로그인해주세요."));
-        }
-
-        await applyPrivilegedAccess(signInData.user?.email);
-    } else {
+    if (signUpData.session) {
         await applyPrivilegedAccess(signUpData.user?.email);
+        revalidatePath("/", "layout");
+        redirect("/onboarding");
     }
 
     revalidatePath("/", "layout");
-    redirect("/onboarding");
+    redirect("/login?verify=1");
 }
 
 function getOAuthRedirectTo() {

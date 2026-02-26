@@ -6,10 +6,13 @@ import { login, signup, signInWithGoogle } from "./actions";
 
 export default function LoginPage() {
     const [isLogin, setIsLogin] = useState(true);
-    const error =
+    const searchParams =
         typeof window !== "undefined"
-            ? new URLSearchParams(window.location.search).get("error")
+            ? new URLSearchParams(window.location.search)
             : null;
+
+    const error = searchParams?.get("error") ?? null;
+    const verify = searchParams?.get("verify") === "1";
 
     return (
         <div className="min-h-screen flex items-center justify-center relative hero-grid px-6">
@@ -57,6 +60,12 @@ export default function LoginPage() {
                             회원가입
                         </button>
                     </div>
+
+                    {verify && (
+                        <div className="rounded-xl border border-emerald-300/50 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                            회원가입 완료! 이메일로 보낸 인증 링크를 눌러 계정을 활성화한 뒤 로그인해 주세요.
+                        </div>
+                    )}
 
                     {error && (
                         <div className="rounded-xl border border-red-300/50 bg-red-50 px-3 py-2 text-xs text-red-700">
