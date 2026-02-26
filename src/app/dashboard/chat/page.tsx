@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { addStudyEvent, getOnboardingPlan } from "@/lib/learning/clientStore";
+import { addStudyEvent, getOnboardingPlan, hydrateLearningFromCloud, syncLearningToCloud } from "@/lib/learning/clientStore";
 
 interface Message {
     id: number;
@@ -49,6 +49,7 @@ export default function ChatPage() {
     }, [messages, isTyping]);
 
     useEffect(() => {
+        hydrateLearningFromCloud().catch(() => undefined);
         const plan = getOnboardingPlan();
         const preferred = plan?.subjects?.find((s) => s.type === "language");
         if (preferred?.id && ["korean", "english", "japanese", "chinese"].includes(preferred.id)) {
@@ -103,6 +104,7 @@ export default function ChatPage() {
                     subject: selectedSubject,
                     at: new Date().toISOString(),
                 });
+                syncLearningToCloud().catch(() => undefined);
             } else {
                 aiText = "⚠️ AI 서비스 연결이 불안정합니다. 다시 시도해주세요.";
                 setConnectionState("unstable");

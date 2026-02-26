@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { addStudyEvent, getOnboardingPlan } from "@/lib/learning/clientStore";
+import { addStudyEvent, getOnboardingPlan, hydrateLearningFromCloud, syncLearningToCloud } from "@/lib/learning/clientStore";
 
 const exams = [
     { id: "topik1", subject: "korean", name: "TOPIK I", flag: "🇰🇷", desc: "초급 한국어 능력 시험", levels: "1~2급", questions: 70, time: "100분", cta: "from-[var(--primary)] to-[var(--primary-light)]" },
@@ -15,6 +15,10 @@ const exams = [
 export default function ExamPage() {
     const router = useRouter();
     const [selected, setSelected] = useState<string | null>(null);
+
+    useEffect(() => {
+        hydrateLearningFromCloud().catch(() => undefined);
+    }, []);
 
     const plan = useMemo(() => getOnboardingPlan(), []);
     const preferredLangs = useMemo(
@@ -44,6 +48,7 @@ export default function ExamPage() {
             at: new Date().toISOString(),
             meta: { examId: exam.id, examName: exam.name },
         });
+        syncLearningToCloud().catch(() => undefined);
         router.push(`/dashboard/chat?mode=exam&exam=${exam.id}`);
     };
 

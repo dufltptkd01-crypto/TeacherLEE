@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { setOnboardingPlan, type OnboardingPlan } from "@/lib/learning/clientStore";
+import { setOnboardingPlan, syncLearningToCloud, type OnboardingPlan } from "@/lib/learning/clientStore";
 
 const languages = [
     { id: "korean", flag: "🇰🇷", name: "한국어", eng: "Korean" },
@@ -112,6 +112,7 @@ export default function OnboardingPage() {
         };
 
         setOnboardingPlan(onboardingPlan);
+        syncLearningToCloud().catch(() => undefined);
         router.push("/dashboard");
     };
 

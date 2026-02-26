@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { getOnboardingPlan, getStudyEvents } from "@/lib/learning/clientStore";
+import { useEffect, useMemo, useState } from "react";
+import { getOnboardingPlan, getStudyEvents, hydrateLearningFromCloud } from "@/lib/learning/clientStore";
 
 const levelLabel: Record<string, string> = {
     beginner: "완전 초보",
@@ -14,9 +14,19 @@ const levelLabel: Record<string, string> = {
 
 
 export default function DashboardPage() {
-    const [plan] = useState(() => getOnboardingPlan());
-    const [events] = useState(() => getStudyEvents());
-    const [nowTs] = useState(() => Date.now());
+    const [plan, setPlan] = useState(() => getOnboardingPlan());
+    const [events, setEvents] = useState(() => getStudyEvents());
+    const [nowTs, setNowTs] = useState(() => Date.now());
+
+    useEffect(() => {
+        hydrateLearningFromCloud()
+            .catch(() => undefined)
+            .finally(() => {
+                setPlan(getOnboardingPlan());
+                setEvents(getStudyEvents());
+                setNowTs(Date.now());
+            });
+    }, []);
 
     const totalXP = useMemo(() => events.length * 5, [events]);
     const targetXP = 50;
