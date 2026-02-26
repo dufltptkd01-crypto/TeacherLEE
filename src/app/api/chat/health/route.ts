@@ -20,8 +20,23 @@ function usingOpenRouter() {
 }
 
 function getPrimaryModel() {
-  if (usingOpenRouter()) return (process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini").trim();
+  if (usingOpenRouter()) return (process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct:free").trim();
   return (process.env.OPENAI_MODEL || "gpt-4o-mini").trim();
+}
+
+function getOpenRouterFallbackModels() {
+  const fromEnv = (process.env.OPENROUTER_FALLBACK_MODELS || "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+  if (fromEnv.length) return fromEnv;
+
+  return [
+    "mistralai/mistral-7b-instruct:free",
+    "google/gemma-2-9b-it:free",
+    "openai/gpt-4.1-mini",
+  ];
 }
 
 export async function GET() {
@@ -64,24 +79,35 @@ export async function GET() {
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status;
       const code = (err as { code?: string })?.code;
+      const shouldTryFallback =
+        status === 401 || status === 402 || status === 403 || status === 404 || code === "model_not_found";
 
-      if (status === 404 || code === "model_not_found") {
-        const fallbackModel = usingOpenRouter() ? "openai/gpt-4.1-mini" : "gpt-4.1-mini";
-        await client.chat.completions.create({
-          model: fallbackModel,
-          messages: [{ role: "user", content: "ping" }],
-          max_tokens: 5,
-          temperature: 0,
-        }, { timeout: 15000 });
+      if (shouldTryFallback) {
+        const candidates = usingOpenRouter()
+          ? getOpenRouterFallbackModels()
+          : ["gpt-4.1-mini"];
 
-        return NextResponse.json({
-          ok: true,
-          keyDetected: true,
-          provider: usingOpenRouter() ? "openrouter" : "openai",
-          model,
-          fallbackModel,
-          warning: "primary_model_unavailable",
-        });
+        for (const fallbackModel of candidates) {
+          try {
+            await client.chat.completions.create({
+              model: fallbackModel,
+              messages: [{ role: "user", content: "ping" }],
+              max_tokens: 5,
+              temperature: 0,
+            }, { timeout: 15000 });
+
+            return NextResponse.json({
+              ok: true,
+              keyDetected: true,
+              provider: usingOpenRouter() ? "openrouter" : "openai",
+              model,
+              fallbackModel,
+              warning: "primary_model_unavailable",
+            });
+          } catch {
+            // try next fallback
+          }
+        }
       }
 
       return NextResponse.json({

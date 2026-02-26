@@ -23,9 +23,24 @@ function usingOpenRouter() {
 
 function getPrimaryModel() {
     if (usingOpenRouter()) {
-        return (process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini").trim();
+        return (process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct:free").trim();
     }
     return (process.env.OPENAI_MODEL || "gpt-4o-mini").trim();
+}
+
+function getOpenRouterFallbackModels() {
+    const fromEnv = (process.env.OPENROUTER_FALLBACK_MODELS || "")
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean);
+
+    if (fromEnv.length) return fromEnv;
+
+    return [
+        "mistralai/mistral-7b-instruct:free",
+        "google/gemma-2-9b-it:free",
+        "openai/gpt-4.1-mini",
+    ];
 }
 
 function getOpenAI() {
@@ -188,14 +203,32 @@ export async function POST(request: NextRequest) {
         } catch (firstError: unknown) {
             const status = (firstError as { status?: number })?.status;
             const code = (firstError as { code?: string })?.code;
-            const shouldRetryModel = status === 404 || code === "model_not_found";
+            const shouldRetryModel =
+                status === 401 || status === 402 || status === 403 || status === 404 || code === "model_not_found";
 
             if (!shouldRetryModel) throw firstError;
 
-            completion = await createWithRetry({
-                model: usingOpenRouter() ? "openai/gpt-4.1-mini" : "gpt-4.1-mini",
-                ...chatPayload,
-            });
+            if (!usingOpenRouter()) {
+                completion = await createWithRetry({
+                    model: "gpt-4.1-mini",
+                    ...chatPayload,
+                });
+            } else {
+                const candidates = getOpenRouterFallbackModels();
+                let lastErr: unknown = firstError;
+
+                for (const model of candidates) {
+                    try {
+                        completion = await createWithRetry({ model, ...chatPayload });
+                        lastErr = null;
+                        break;
+                    } catch (err) {
+                        lastErr = err;
+                    }
+                }
+
+                if (!completion) throw lastErr;
+            }
         }
 
         const reply = "choices" in completion ? completion.choices[0]?.message?.content || "" : "";
