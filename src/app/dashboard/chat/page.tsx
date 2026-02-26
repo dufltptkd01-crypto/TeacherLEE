@@ -26,6 +26,27 @@ const quickReplies = [
     "JavaScript 기초 배우기",
 ];
 
+const foundationModes = [
+    {
+        id: "letters",
+        label: "문자학습",
+        icon: "🔤",
+        description: "알파벳/자모/히라가나/병음 등 문자 체계 학습",
+    },
+    {
+        id: "vocab",
+        label: "단어암기",
+        icon: "🧠",
+        description: "SRS 기반 핵심 단어 암기 + 복습",
+    },
+    {
+        id: "patterns",
+        label: "문장패턴",
+        icon: "🧩",
+        description: "자기소개·요청·의견 표현 패턴 훈련",
+    },
+] as const;
+
 const subjects = [
     { id: "korean", flag: "🇰🇷", short: "KR", name: "한국어" },
     { id: "english", flag: "🇺🇸", short: "US", name: "English" },
@@ -38,6 +59,7 @@ export default function ChatPage() {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [selectedSubject, setSelectedSubject] = useState("korean");
+    const [learningMode, setLearningMode] = useState<(typeof foundationModes)[number]["id"] | "free">("free");
     const [lastFailedText, setLastFailedText] = useState<string | null>(null);
     const [connectionState, setConnectionState] = useState<"ok" | "unstable">("ok");
     const chatRef = useRef<HTMLDivElement>(null);
@@ -56,6 +78,37 @@ export default function ChatPage() {
             setSelectedSubject(preferred.id);
         }
     }, []);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode");
+        if (mode === "letters" || mode === "vocab" || mode === "patterns") {
+            setLearningMode(mode);
+            sendLearningStarter(mode);
+        }
+        if (mode === "exam") {
+            const exam = params.get("exam");
+            if (exam) {
+                sendMessage(`${exam} 모의시험을 시작하고 싶은데, 실전형 문제부터 진행해 주세요.`);
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const sendLearningStarter = (mode: (typeof foundationModes)[number]["id"]) => {
+        const subjectLabel = subjects.find((s) => s.id === selectedSubject)?.name ?? "한국어";
+
+        if (mode === "letters") {
+            sendMessage(`${subjectLabel}의 문자/발음 기초부터 가르쳐 주세요. 오늘 학습할 10개와 퀴즈를 주세요.`);
+            return;
+        }
+        if (mode === "vocab") {
+            sendMessage(`${subjectLabel} 핵심 단어 20개를 초급 난이도로 SRS 복습 방식으로 학습시켜 주세요.`);
+            return;
+        }
+        sendMessage(`${subjectLabel} 문장 패턴(자기소개/요청/의견) 중심으로 연습 문제를 내주세요.`);
+    };
 
     const sendMessage = async (text: string) => {
         if (!text.trim() || isTyping) return;
@@ -200,6 +253,36 @@ export default function ChatPage() {
                         ⚙️
                     </button>
                 </div>
+            </div>
+
+            <div className="shrink-0 mx-3 sm:mx-4 lg:mx-6 mt-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/40 px-3 py-2">
+                <div className="flex flex-wrap gap-2 mb-2">
+                    <button
+                        type="button"
+                        onClick={() => setLearningMode("free")}
+                        className={`text-xs px-3 py-1.5 rounded-full border ${learningMode === "free" ? "border-[var(--primary)]/40 bg-[var(--primary)]/15 text-[var(--primary-light)]" : "border-[var(--border)] text-[var(--text-muted)]"}`}
+                    >
+                        💬 자유 대화
+                    </button>
+                    {foundationModes.map((mode) => (
+                        <button
+                            key={mode.id}
+                            type="button"
+                            onClick={() => {
+                                setLearningMode(mode.id);
+                                sendLearningStarter(mode.id);
+                            }}
+                            className={`text-xs px-3 py-1.5 rounded-full border ${learningMode === mode.id ? "border-[var(--secondary)]/40 bg-[var(--secondary)]/15 text-[var(--text-primary)]" : "border-[var(--border)] text-[var(--text-muted)]"}`}
+                        >
+                            {mode.icon} {mode.label}
+                        </button>
+                    ))}
+                </div>
+                {learningMode !== "free" && (
+                    <p className="text-[11px] text-[var(--text-muted)]">
+                        {foundationModes.find((m) => m.id === learningMode)?.description}
+                    </p>
+                )}
             </div>
 
             {connectionState === "unstable" && (
