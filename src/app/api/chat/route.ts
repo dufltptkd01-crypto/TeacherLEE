@@ -186,14 +186,14 @@ export async function POST(request: NextRequest) {
 
         const subjectContext =
             subject === "korean"
-                ? "The student is learning Korean."
+                ? "The student is learning Korean. Respond primarily in Korean and teach Korean expressions."
                 : subject === "english"
-                    ? "The student is learning English."
+                    ? "The student is learning English. Respond primarily in English and coach grammar naturally."
                     : subject === "japanese"
-                        ? "The student is learning Japanese."
+                        ? "The student is learning Japanese. Respond primarily in Japanese with furigana-style reading hints when useful."
                         : subject === "chinese"
-                            ? "The student is learning Chinese."
-                            : "The student is learning programming.";
+                            ? "The student is learning Chinese. Respond primarily in Chinese and include pinyin hints when useful."
+                            : "The student is learning programming. Respond in Korean with concise code explanations.";
 
         const latest = normalizedMessages[normalizedMessages.length - 1]?.content || "";
 

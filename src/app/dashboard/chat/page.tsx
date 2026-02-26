@@ -27,10 +27,10 @@ const quickReplies = [
 ];
 
 const subjects = [
-    { id: "korean", flag: "🇰🇷", name: "한국어" },
-    { id: "english", flag: "🇺🇸", name: "English" },
-    { id: "japanese", flag: "🇯🇵", name: "日本語" },
-    { id: "chinese", flag: "🇨🇳", name: "中文" },
+    { id: "korean", flag: "🇰🇷", short: "KR", name: "한국어" },
+    { id: "english", flag: "🇺🇸", short: "US", name: "English" },
+    { id: "japanese", flag: "🇯🇵", short: "JP", name: "日本語" },
+    { id: "chinese", flag: "🇨🇳", short: "CN", name: "中文" },
 ];
 
 export default function ChatPage() {
@@ -154,6 +154,8 @@ export default function ChatPage() {
                     <div className={`text-xs flex items-center gap-1 ${connectionState === "ok" ? "text-[var(--secondary)]" : "text-amber-300"}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${connectionState === "ok" ? "bg-[var(--secondary)] animate-pulse" : "bg-amber-300"}`} />
                         {connectionState === "ok" ? "온라인" : "재연결 중"}
+                        <span className="ml-2 text-[var(--text-muted)]">·</span>
+                        <span className="text-[var(--text-muted)]">현재 과목: {subjects.find((s) => s.id === selectedSubject)?.name}</span>
                     </div>
                 </div>
 
@@ -162,13 +164,16 @@ export default function ChatPage() {
                     {subjects.map((s) => (
                         <button
                             key={s.id}
+                            type="button"
                             onClick={() => setSelectedSubject(s.id)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedSubject === s.id
-                                ? "bg-[var(--primary)]/20 text-[var(--primary-light)] border border-[var(--primary)]/30"
-                                : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                            className={`px-2.5 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedSubject === s.id
+                                ? "bg-[var(--primary)]/20 text-[var(--primary-light)] border-[var(--primary)]/40"
+                                : "text-[var(--text-muted)] border-transparent hover:border-[var(--border-light)] hover:text-[var(--text-secondary)]"
                                 }`}
+                            aria-label={`${s.name} 선택`}
+                            title={s.name}
                         >
-                            {s.flag}
+                            {s.short}
                         </button>
                     ))}
                 </div>
