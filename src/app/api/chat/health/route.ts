@@ -35,8 +35,33 @@ function getOpenRouterFallbackModels() {
   return [
     "mistralai/mistral-7b-instruct:free",
     "google/gemma-2-9b-it:free",
+    "deepseek/deepseek-chat:free",
     "openai/gpt-4.1-mini",
   ];
+}
+
+let openRouterModelCache: { at: number; models: string[] } | null = null;
+
+async function discoverOpenRouterModels() {
+  const now = Date.now();
+  if (openRouterModelCache && now - openRouterModelCache.at < 10 * 60 * 1000) {
+    return openRouterModelCache.models;
+  }
+
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/models", { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { data?: Array<{ id?: string }> };
+    const models = (data.data || [])
+      .map((m) => m.id || "")
+      .filter((id) => id.includes(":free"))
+      .slice(0, 25);
+
+    openRouterModelCache = { at: now, models };
+    return models;
+  } catch {
+    return [];
+  }
 }
 
 export async function GET() {
@@ -83,8 +108,9 @@ export async function GET() {
         status === 401 || status === 402 || status === 403 || status === 404 || code === "model_not_found";
 
       if (shouldTryFallback) {
+        const discovered = usingOpenRouter() ? await discoverOpenRouterModels() : [];
         const candidates = usingOpenRouter()
-          ? getOpenRouterFallbackModels()
+          ? [...new Set([getPrimaryModel(), ...getOpenRouterFallbackModels(), ...discovered])]
           : ["gpt-4.1-mini"];
 
         for (const fallbackModel of candidates) {
