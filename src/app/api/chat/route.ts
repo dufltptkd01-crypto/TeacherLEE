@@ -12,11 +12,35 @@ function getOpenAIKey() {
     return raw.trim().replace(/^['\"]|['\"]$/g, "");
 }
 
+function getOpenRouterKey() {
+    const raw = process.env.OPENROUTER_API_KEY || "";
+    return raw.trim().replace(/^['\"]|['\"]$/g, "");
+}
+
+function usingOpenRouter() {
+    return !!getOpenRouterKey();
+}
+
 function getPrimaryModel() {
+    if (usingOpenRouter()) {
+        return (process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini").trim();
+    }
     return (process.env.OPENAI_MODEL || "gpt-4o-mini").trim();
 }
 
 function getOpenAI() {
+    const openRouterKey = getOpenRouterKey();
+    if (openRouterKey) {
+        return new OpenAI({
+            apiKey: openRouterKey,
+            baseURL: "https://openrouter.ai/api/v1",
+            defaultHeaders: {
+                "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://teacher-lee.dufltptkd01.workers.dev",
+                "X-Title": "TeacherLEE",
+            },
+        });
+    }
+
     return new OpenAI({ apiKey: getOpenAIKey() });
 }
 
@@ -133,12 +157,12 @@ export async function POST(request: NextRequest) {
 
         const latest = normalizedMessages[normalizedMessages.length - 1]?.content || "";
 
-        if (!getOpenAIKey()) {
+        if (!getOpenAIKey() && !getOpenRouterKey()) {
             return NextResponse.json({
                 message: getFallbackReply(subject, latest),
                 usage: { prompt_tokens: 0, completion_tokens: 0 },
                 fallback: true,
-                reason: "missing_openai_api_key",
+                reason: "missing_openai_or_openrouter_key",
             });
         }
 
@@ -169,7 +193,7 @@ export async function POST(request: NextRequest) {
             if (!shouldRetryModel) throw firstError;
 
             completion = await createWithRetry({
-                model: "gpt-4.1-mini",
+                model: usingOpenRouter() ? "openai/gpt-4.1-mini" : "gpt-4.1-mini",
                 ...chatPayload,
             });
         }
