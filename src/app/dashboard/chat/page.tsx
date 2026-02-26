@@ -98,13 +98,19 @@ export default function ChatPage() {
             if (res.ok) {
                 const data = await res.json();
                 aiText = data.reply || data.message || "죄송합니다, 응답을 처리하지 못했어요.";
-                setConnectionState("ok");
-                addStudyEvent({
-                    kind: "chat",
-                    subject: selectedSubject,
-                    at: new Date().toISOString(),
-                });
-                syncLearningToCloud().catch(() => undefined);
+
+                if (data.fallback) {
+                    setConnectionState("unstable");
+                    setLastFailedText(text.trim());
+                } else {
+                    setConnectionState("ok");
+                    addStudyEvent({
+                        kind: "chat",
+                        subject: selectedSubject,
+                        at: new Date().toISOString(),
+                    });
+                    syncLearningToCloud().catch(() => undefined);
+                }
             } else {
                 aiText = "⚠️ AI 서비스 연결이 불안정합니다. 다시 시도해주세요.";
                 setConnectionState("unstable");
@@ -193,7 +199,7 @@ export default function ChatPage() {
 
             {connectionState === "unstable" && (
                 <div className="shrink-0 mx-3 sm:mx-4 lg:mx-6 mt-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-3 py-2 flex items-center justify-between gap-3">
-                    <p className="text-xs text-amber-200">연결이 불안정합니다. 메시지가 누락되면 재전송해 주세요.</p>
+                    <p className="text-xs text-amber-200">연결이 불안정합니다. 메시지가 누락되면 재전송해 주세요. <a href="/api/chat/health" target="_blank" className="underline">진단 보기</a></p>
                     {lastFailedText && (
                         <button
                             onClick={() => sendMessage(lastFailedText)}
