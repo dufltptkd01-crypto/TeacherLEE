@@ -3,12 +3,17 @@ import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 
 function getOpenAIKey() {
-    return (
+    const raw =
         process.env.OPENAI_API_KEY ||
         process.env.OPENAI_KEY ||
         process.env.OPENAI_TOKEN ||
-        ""
-    );
+        "";
+
+    return raw.trim().replace(/^['\"]|['\"]$/g, "");
+}
+
+function getPrimaryModel() {
+    return (process.env.OPENAI_MODEL || "gpt-4o-mini").trim();
 }
 
 function getOpenAI() {
@@ -137,19 +142,37 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        const completion = await createWithRetry({
-            model: "gpt-4o-mini",
+        const chatPayload = {
             messages: [
                 {
-                    role: "system",
+                    role: "system" as const,
                     content: `${SYSTEM_PROMPT}\n\nCONTEXT: ${subjectContext}`,
                 },
                 ...normalizedMessages,
             ],
             max_tokens: 1024,
             temperature: 0.7,
-            stream: false,
-        });
+            stream: false as const,
+        };
+
+        let completion;
+        try {
+            completion = await createWithRetry({
+                model: getPrimaryModel(),
+                ...chatPayload,
+            });
+        } catch (firstError: unknown) {
+            const status = (firstError as { status?: number })?.status;
+            const code = (firstError as { code?: string })?.code;
+            const shouldRetryModel = status === 404 || code === "model_not_found";
+
+            if (!shouldRetryModel) throw firstError;
+
+            completion = await createWithRetry({
+                model: "gpt-4.1-mini",
+                ...chatPayload,
+            });
+        }
 
         const reply = "choices" in completion ? completion.choices[0]?.message?.content || "" : "";
         const usage = "usage" in completion ? completion.usage : undefined;
@@ -176,6 +199,7 @@ export async function POST(request: NextRequest) {
             message: getFallbackReply("korean", "연결 복구 중"),
             usage: { prompt_tokens: 0, completion_tokens: 0 },
             fallback: true,
+            reason: status ? `openai_status_${status}` : "openai_runtime_error",
         });
     }
 }
