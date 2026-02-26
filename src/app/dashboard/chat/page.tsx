@@ -4,8 +4,14 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import {
     addStudyEvent,
     getOnboardingPlan,
+    getPatternScores,
+    getVocabCards,
     hydrateLearningFromCloud,
+    setPatternScores,
+    setVocabCards,
     syncLearningToCloud,
+    type PatternScore,
+    type VocabCard,
 } from "@/lib/learning/clientStore";
 
 interface Message {
@@ -94,11 +100,12 @@ export default function ChatPage() {
     const [connectionState, setConnectionState] = useState<"ok" | "unstable">("ok");
 
     const [wordInput, setWordInput] = useState("");
-    const [savedWords, setSavedWords] = useState<string[]>([]);
-    const [masteredWords, setMasteredWords] = useState<string[]>([]);
-    const [wrongNotes, setWrongNotes] = useState<string[]>([]);
+    const [vocabCards, setVocabCardsState] = useState<VocabCard[]>([]);
 
     const [patternDone, setPatternDone] = useState<string[]>([]);
+    const [patternText, setPatternText] = useState("");
+    const [patternScores, setPatternScoresState] = useState<PatternScore[]>([]);
+    const [scoring, setScoring] = useState(false);
 
     const [quiz, setQuiz] = useState(() => pickRandom(letterQuizzes.korean));
     const [quizFeedback, setQuizFeedback] = useState<string | null>(null);
@@ -113,17 +120,23 @@ export default function ChatPage() {
         const list: string[] = [];
         if (sessionXP >= 10) list.push("🌟 Starter");
         if (sessionXP >= 30) list.push("🔥 Focus");
-        if (masteredWords.length >= 20) list.push("🧠 Vocab 20+");
+        if (vocabCards.filter((c) => c.mastered).length >= 20) list.push("🧠 Vocab 20+");
         if (patternProgress >= 80) list.push("🧩 Pattern Master");
         return list;
-    }, [sessionXP, masteredWords.length, patternProgress]);
+    }, [sessionXP, vocabCards, patternProgress]);
 
     useEffect(() => {
         if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }, [messages, isTyping]);
 
     useEffect(() => {
-        hydrateLearningFromCloud().catch(() => undefined);
+        hydrateLearningFromCloud()
+            .catch(() => undefined)
+            .finally(() => {
+                setVocabCardsState(getVocabCards());
+                setPatternScoresState(getPatternScores());
+            });
+
         const plan = getOnboardingPlan();
         const preferred = plan?.subjects?.find((s) => s.type === "language");
         if (preferred?.id && ["korean", "english", "japanese", "chinese"].includes(preferred.id)) {
@@ -224,20 +237,49 @@ export default function ChatPage() {
         }
     };
 
+    const persistVocab = (next: VocabCard[]) => {
+        setVocabCardsState(next);
+        setVocabCards(next);
+        syncLearningToCloud().catch(() => undefined);
+    };
+
     const addWord = () => {
         const w = wordInput.trim();
-        if (!w || savedWords.includes(w)) return;
-        setSavedWords((prev) => [w, ...prev]);
+        if (!w || vocabCards.some((c) => c.word === w && c.subject === selectedSubject)) return;
+
+        const card: VocabCard = {
+            id: crypto.randomUUID(),
+            word: w,
+            subject: selectedSubject,
+            addedAt: new Date().toISOString(),
+            mastered: false,
+            wrongCount: 0,
+            reviewIntervalDays: 1,
+            nextReviewAt: new Date().toISOString(),
+        };
+
+        persistVocab([card, ...vocabCards]);
         setWordInput("");
     };
 
-    const markMastered = (w: string) => {
-        if (!masteredWords.includes(w)) setMasteredWords((prev) => [w, ...prev]);
+    const markMastered = (id: string) => {
+        const next = vocabCards.map((c) => {
+            if (c.id !== id) return c;
+            const interval = Math.min(30, c.reviewIntervalDays * 2);
+            const nextDate = new Date(Date.now() + interval * 24 * 60 * 60 * 1000).toISOString();
+            return { ...c, mastered: true, reviewIntervalDays: interval, nextReviewAt: nextDate };
+        });
+        persistVocab(next);
         setSessionXP((v) => v + 2);
     };
 
-    const markWrong = (w: string) => {
-        if (!wrongNotes.includes(w)) setWrongNotes((prev) => [w, ...prev]);
+    const markWrong = (id: string) => {
+        const next = vocabCards.map((c) => {
+            if (c.id !== id) return c;
+            const nextDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            return { ...c, mastered: false, wrongCount: c.wrongCount + 1, reviewIntervalDays: 1, nextReviewAt: nextDate };
+        });
+        persistVocab(next);
     };
 
     const togglePattern = (p: string) => {
@@ -252,6 +294,46 @@ export default function ChatPage() {
         setQuizFeedback(ok ? "정답이에요! 🎉" : `오답이에요. 정답: ${quiz.answer}`);
         if (ok) setSessionXP((v) => v + 3);
     };
+
+    const evaluatePattern = async () => {
+        if (!patternText.trim() || scoring) return;
+        setScoring(true);
+        try {
+            const target = patternTemplates.find((p) => !patternDone.includes(p)) || patternTemplates[0];
+            const res = await fetch("/api/pattern-score", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    subject: selectedSubject,
+                    pattern: target,
+                    text: patternText.trim(),
+                }),
+            });
+            const data = await res.json();
+            const scoreItem: PatternScore = {
+                id: crypto.randomUUID(),
+                pattern: target,
+                text: patternText.trim(),
+                score: Number(data.score || 60),
+                feedback: String(data.feedback || "좋아요. 다음 문장을 시도해보세요."),
+                at: new Date().toISOString(),
+            };
+            const next = [scoreItem, ...patternScores].slice(0, 100);
+            setPatternScoresState(next);
+            setPatternScores(next);
+            syncLearningToCloud().catch(() => undefined);
+            setSessionXP((v) => v + 4);
+            setPatternText("");
+        } finally {
+            setScoring(false);
+        }
+    };
+
+    const dueCards = vocabCards
+        .filter((c) => c.subject === selectedSubject && new Date(c.nextReviewAt).getTime() <= Date.now())
+        .slice(0, 8);
+
+    const recentPatternScore = patternScores[0];
 
     return (
         <div className="h-[calc(100dvh-56px-84px)] lg:h-screen flex flex-col relative">
@@ -345,16 +427,21 @@ export default function ChatPage() {
                         <input value={wordInput} onChange={(e) => setWordInput(e.target.value)} placeholder="단어 입력" className="flex-1 h-9 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] px-3 text-xs" />
                         <button type="button" onClick={addWord} className="text-xs px-3 rounded-lg bg-[var(--primary)] text-white">추가</button>
                     </div>
+                    {dueCards.length > 0 && (
+                        <p className="text-[11px] text-amber-300 mb-2">오늘 복습할 단어 {dueCards.length}개가 있어요.</p>
+                    )}
                     <div className="flex flex-wrap gap-2 mb-2">
-                        {savedWords.slice(0, 12).map((w) => (
-                            <span key={w} className="text-xs px-2 py-1 rounded-lg border border-[var(--border)]">
-                                {w}
-                                <button onClick={() => markMastered(w)} className="ml-1 text-[10px] text-emerald-400">암기</button>
-                                <button onClick={() => markWrong(w)} className="ml-1 text-[10px] text-amber-300">오답</button>
+                        {vocabCards.filter((c) => c.subject === selectedSubject).slice(0, 14).map((card) => (
+                            <span key={card.id} className="text-xs px-2 py-1 rounded-lg border border-[var(--border)]">
+                                {card.word}
+                                <button onClick={() => markMastered(card.id)} className="ml-1 text-[10px] text-emerald-400">암기</button>
+                                <button onClick={() => markWrong(card.id)} className="ml-1 text-[10px] text-amber-300">오답</button>
                             </span>
                         ))}
                     </div>
-                    <p className="text-[11px] text-[var(--text-muted)]">암기 완료 {masteredWords.length}개 · 오답노트 {wrongNotes.length}개</p>
+                    <p className="text-[11px] text-[var(--text-muted)]">
+                        암기 완료 {vocabCards.filter((c) => c.mastered).length}개 · 오답누적 {vocabCards.reduce((a, c) => a + c.wrongCount, 0)}회
+                    </p>
                 </div>
             )}
 
@@ -365,12 +452,31 @@ export default function ChatPage() {
                         <div className="h-2 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]" style={{ width: `${patternProgress}%` }} />
                     </div>
                     <p className="text-[11px] text-[var(--text-muted)] mb-2">{patternProgress}% 완료</p>
-                    <div className="grid sm:grid-cols-2 gap-2">
+                    <div className="grid sm:grid-cols-2 gap-2 mb-2">
                         {patternTemplates.map((p) => (
                             <button key={p} onClick={() => togglePattern(p)} className={`text-xs px-2 py-2 rounded-lg border text-left ${patternDone.includes(p) ? "border-emerald-400/40 bg-emerald-500/10" : "border-[var(--border)]"}`}>
                                 {patternDone.includes(p) ? "✅" : "⬜"} {p}
                             </button>
                         ))}
+                    </div>
+
+                    <div className="rounded-lg border border-[var(--border)] p-2 space-y-2">
+                        <p className="text-xs text-[var(--text-muted)]">문장 작성 후 AI 채점을 눌러보세요.</p>
+                        <textarea
+                            value={patternText}
+                            onChange={(e) => setPatternText(e.target.value)}
+                            rows={2}
+                            placeholder="예: 안녕하세요. 저는 서울에서 왔고, 오늘 한국어를 연습하고 싶어요."
+                            className="w-full text-xs rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] px-2 py-2"
+                        />
+                        <button type="button" onClick={evaluatePattern} disabled={scoring} className="text-xs px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white disabled:opacity-60">
+                            {scoring ? "채점 중..." : "AI 채점"}
+                        </button>
+                        {recentPatternScore && (
+                            <p className="text-xs text-[var(--text-secondary)]">
+                                최근 점수: <span className="font-semibold">{recentPatternScore.score}점</span> · {recentPatternScore.feedback}
+                            </p>
+                        )}
                     </div>
                 </div>
             )}
