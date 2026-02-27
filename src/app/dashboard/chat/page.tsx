@@ -282,6 +282,22 @@ export default function ChatPage() {
         persistVocab(next);
     };
 
+    const speakWord = (word: string) => {
+        if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+        const utter = new SpeechSynthesisUtterance(word);
+        utter.lang =
+            selectedSubject === "english"
+                ? "en-US"
+                : selectedSubject === "japanese"
+                    ? "ja-JP"
+                    : selectedSubject === "chinese"
+                        ? "zh-CN"
+                        : "ko-KR";
+        utter.rate = 0.9;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    };
+
     const togglePattern = (p: string) => {
         setPatternDone((prev) =>
             prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
@@ -432,10 +448,11 @@ export default function ChatPage() {
                     )}
                     <div className="flex flex-wrap gap-2 mb-2">
                         {vocabCards.filter((c) => c.subject === selectedSubject).slice(0, 14).map((card) => (
-                            <span key={card.id} className="text-xs px-2 py-1 rounded-lg border border-[var(--border)]">
+                            <span key={card.id} className="text-xs px-2 py-1 rounded-lg border border-[var(--border)] inline-flex items-center gap-1">
                                 {card.word}
-                                <button onClick={() => markMastered(card.id)} className="ml-1 text-[10px] text-emerald-400">암기</button>
-                                <button onClick={() => markWrong(card.id)} className="ml-1 text-[10px] text-amber-300">오답</button>
+                                <button onClick={() => speakWord(card.word)} className="text-[10px] text-[var(--primary-light)]">🔊</button>
+                                <button onClick={() => markMastered(card.id)} className="text-[10px] text-emerald-400">암기</button>
+                                <button onClick={() => markWrong(card.id)} className="text-[10px] text-amber-300">오답</button>
                             </span>
                         ))}
                     </div>
