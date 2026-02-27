@@ -13,6 +13,7 @@ import {
     type PatternScore,
     type VocabCard,
 } from "@/lib/learning/clientStore";
+import { createClient } from "@/lib/supabase/client";
 
 interface Message {
     id: number;
@@ -176,9 +177,17 @@ export default function ChatPage() {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 20000);
 
+            const supabase = createClient();
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            const headers: Record<string, string> = { "Content-Type": "application/json" };
+            if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+
             const res = await fetch("/api/chat", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 signal: controller.signal,
                 body: JSON.stringify({
                     message: text.trim(),

@@ -22,9 +22,16 @@ IMPORTANT: Respond ONLY with a valid JSON array. No markdown, no extra text.`;
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createClient();
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
+        const authHeader = request.headers.get("authorization") || "";
+        const token = authHeader.toLowerCase().startsWith("bearer ")
+            ? authHeader.slice(7).trim()
+            : "";
+
+        const userResult = token
+            ? await supabase.auth.getUser(token)
+            : await supabase.auth.getUser();
+
+        const user = userResult.data.user;
 
         if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
