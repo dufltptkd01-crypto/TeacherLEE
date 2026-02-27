@@ -59,6 +59,23 @@ export default function ReportPage() {
 
   const maxMinutes = Math.max(1, ...weekData.map((d) => d.minutes));
 
+  const patternTrend = useMemo(() => {
+    return Array.from({ length: 7 }).map((_, i) => {
+      const d = startOfDay(new Date(now - (6 - i) * 24 * 60 * 60 * 1000));
+      const next = new Date(d.getTime() + 24 * 60 * 60 * 1000);
+      const dayScores = patternScores.filter((p) => {
+        const t = new Date(p.at).getTime();
+        return t >= d.getTime() && t < next.getTime();
+      });
+      const avg = dayScores.length
+        ? Math.round(dayScores.reduce((a, b) => a + b.score, 0) / dayScores.length)
+        : 0;
+      return { day: dayLabels[d.getDay()], score: avg };
+    });
+  }, [patternScores, now]);
+
+  const maxPatternScore = Math.max(1, ...patternTrend.map((d) => d.score));
+
   const subjectGoals = [
     {
       subject: "한국어",
@@ -174,6 +191,26 @@ export default function ReportPage() {
         ) : (
           <p className="text-xs text-[var(--text-muted)]">아직 패턴 채점 기록이 없습니다. 채팅의 문장패턴 탭에서 AI 채점을 시작해보세요.</p>
         )}
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4">📉 패턴 채점 점수 추세 (7일)</h2>
+        <div className="overflow-x-auto">
+          <div className="flex items-end gap-3 h-36 min-w-[420px]">
+            {patternTrend.map((d) => (
+              <div key={d.day} className="flex-1 flex flex-col items-center gap-2">
+                <span className="text-[10px] text-[var(--text-muted)]">{d.score || "-"}</span>
+                <div className="w-full max-w-10 rounded-t-lg bg-[var(--bg-primary)] relative" style={{ height: "100%" }}>
+                  <div
+                    className="absolute bottom-0 left-0 right-0 rounded-t-lg bg-gradient-to-t from-[var(--secondary)] to-[var(--primary-light)]"
+                    style={{ height: d.score ? `${(d.score / maxPatternScore) * 100}%` : "4%" }}
+                  />
+                </div>
+                <span className="text-xs text-[var(--text-muted)]">{d.day}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="glass rounded-2xl p-6">

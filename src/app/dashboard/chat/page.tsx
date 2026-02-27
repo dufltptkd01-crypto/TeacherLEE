@@ -349,6 +349,12 @@ export default function ChatPage() {
         .filter((c) => c.subject === selectedSubject && new Date(c.nextReviewAt).getTime() <= Date.now())
         .slice(0, 8);
 
+    const startDueReview = () => {
+        if (!dueCards.length) return;
+        const words = dueCards.map((c) => c.word).join(", ");
+        sendMessage(`다음 단어들을 복습 퀴즈로 내주세요: ${words}`);
+    };
+
     const recentPatternScore = patternScores[0];
 
     return (
@@ -412,8 +418,17 @@ export default function ChatPage() {
                     </p>
                 )}
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 items-center">
                     <span className="text-[11px] px-2 py-1 rounded-lg bg-[var(--bg-primary)] text-[var(--text-muted)]">세션 XP: {sessionXP}</span>
+                    {dueCards.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={startDueReview}
+                            className="text-[11px] px-2 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-400/30"
+                        >
+                            🔔 오늘 복습 {dueCards.length}개
+                        </button>
+                    )}
                     {badges.map((b) => (
                         <span key={b} className="text-[11px] px-2 py-1 rounded-lg bg-[var(--primary)]/10 text-[var(--primary-light)]">{b}</span>
                     ))}
