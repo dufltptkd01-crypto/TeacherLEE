@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { getOnboardingPlan, getPatternScores, getStudyEvents, getVocabCards, hydrateLearningFromCloud, setOnboardingPlan, syncLearningToCloud } from "@/lib/learning/clientStore";
+import { addPromotion, getOnboardingPlan, getPatternScores, getPromotions, getStudyEvents, getVocabCards, hydrateLearningFromCloud, setOnboardingPlan, syncLearningToCloud } from "@/lib/learning/clientStore";
 
 const levelLabel: Record<string, string> = {
     beginner: "완전 초보",
@@ -26,6 +26,7 @@ export default function DashboardPage() {
     const [events, setEvents] = useState(() => getStudyEvents());
     const [patternScores, setPatternScores] = useState(() => getPatternScores());
     const [vocabCards, setVocabCards] = useState(() => getVocabCards());
+    const [promotions, setPromotions] = useState(() => getPromotions());
     const [nowTs, setNowTs] = useState(() => Date.now());
 
     useEffect(() => {
@@ -36,6 +37,7 @@ export default function DashboardPage() {
                 setEvents(getStudyEvents());
                 setPatternScores(getPatternScores());
                 setVocabCards(getVocabCards());
+                setPromotions(getPromotions());
                 setNowTs(Date.now());
             });
     }, []);
@@ -105,6 +107,8 @@ export default function DashboardPage() {
         if (!plan?.subjects?.length || !promotionCandidate) return;
 
         let changed = false;
+        const newPromotions: Array<{ subjectId: string; subjectTitle: string; fromLevel: string; toLevel: string }> = [];
+
         const promotedSubjects = plan.subjects.map((s) => {
             const subjectScores = twoWeekScores.filter((p) => (p.subject || "") === s.id);
             if (subjectScores.length < 4) return s;
@@ -114,6 +118,12 @@ export default function DashboardPage() {
             const nextLevel = promoteLevel(s.level);
             if (nextLevel !== s.level) {
                 changed = true;
+                newPromotions.push({
+                    subjectId: s.id,
+                    subjectTitle: s.title,
+                    fromLevel: s.level,
+                    toLevel: nextLevel,
+                });
                 return { ...s, level: nextLevel };
             }
             return s;
@@ -124,6 +134,20 @@ export default function DashboardPage() {
         const nextPlan = { ...plan, subjects: promotedSubjects };
         setPlan(nextPlan);
         setOnboardingPlan(nextPlan);
+
+        if (newPromotions.length) {
+            const added = newPromotions.map((p) => ({
+                id: crypto.randomUUID(),
+                subjectId: p.subjectId,
+                subjectTitle: p.subjectTitle,
+                fromLevel: p.fromLevel,
+                toLevel: p.toLevel,
+                at: new Date().toISOString(),
+            }));
+            added.forEach((p) => addPromotion(p));
+            setPromotions(getPromotions());
+        }
+
         syncLearningToCloud().catch(() => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [promotionCandidate]);
@@ -331,6 +355,22 @@ export default function DashboardPage() {
                                 </div>
                             )) : (
                                 <p className="text-xs text-[var(--text-muted)]">온보딩을 완료하면 과목별 위젯이 표시됩니다.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Promotion Timeline */}
+                    <div className="glass rounded-2xl p-6">
+                        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4">🕒 승급 히스토리</h2>
+                        <div className="space-y-3">
+                            {promotions.length ? promotions.slice(0, 5).map((p) => (
+                                <div key={p.id} className="rounded-xl border border-[var(--border)] p-3">
+                                    <div className="text-xs font-medium text-[var(--text-primary)]">{p.subjectTitle}</div>
+                                    <div className="text-xs text-[var(--text-muted)] mt-1">{levelLabel[p.fromLevel] ?? p.fromLevel} → {levelLabel[p.toLevel] ?? p.toLevel}</div>
+                                    <div className="text-[10px] text-[var(--text-muted)] mt-1">{new Date(p.at).toLocaleString("ko-KR")}</div>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-[var(--text-muted)]">아직 자동 승급 히스토리가 없습니다.</p>
                             )}
                         </div>
                     </div>

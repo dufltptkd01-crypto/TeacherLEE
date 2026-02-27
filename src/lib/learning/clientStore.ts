@@ -47,11 +47,21 @@ export type PatternScore = {
   at: string;
 };
 
+export type PromotionHistory = {
+  id: string;
+  subjectId: string;
+  subjectTitle: string;
+  fromLevel: string;
+  toLevel: string;
+  at: string;
+};
+
 export type LearningState = {
   plan: OnboardingPlan | null;
   events: StudyEvent[];
   vocabCards: VocabCard[];
   patternScores: PatternScore[];
+  promotions: PromotionHistory[];
   updatedAt: string;
 };
 
@@ -59,6 +69,7 @@ const PLAN_KEY = "teacherlee:onboarding";
 const EVENTS_KEY = "teacherlee:study-events";
 const VOCAB_KEY = "teacherlee:vocab-cards";
 const PATTERN_SCORE_KEY = "teacherlee:pattern-scores";
+const PROMOTION_KEY = "teacherlee:promotions";
 const MAX_EVENTS = 400;
 
 function safeJsonParse<T>(raw: string | null, fallback: T): T {
@@ -134,12 +145,29 @@ export function setPatternScores(scores: PatternScore[]) {
   localStorage.setItem(PATTERN_SCORE_KEY, JSON.stringify(scores.slice(-300)));
 }
 
+export function getPromotions(): PromotionHistory[] {
+  if (typeof window === "undefined") return [];
+  return safeJsonParse<PromotionHistory[]>(localStorage.getItem(PROMOTION_KEY), []);
+}
+
+export function setPromotions(promotions: PromotionHistory[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(PROMOTION_KEY, JSON.stringify(promotions.slice(-200)));
+}
+
+export function addPromotion(promotion: PromotionHistory) {
+  if (typeof window === "undefined") return;
+  const prev = getPromotions();
+  setPromotions([promotion, ...prev]);
+}
+
 export function getLearningState(): LearningState {
   return {
     plan: getOnboardingPlan(),
     events: getStudyEvents(),
     vocabCards: getVocabCards(),
     patternScores: getPatternScores(),
+    promotions: getPromotions(),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -150,6 +178,7 @@ export function setLearningState(state: LearningState) {
   setStudyEvents(state.events ?? []);
   setVocabCards(state.vocabCards ?? []);
   setPatternScores(state.patternScores ?? []);
+  setPromotions(state.promotions ?? []);
 }
 
 export async function syncLearningToCloud() {
@@ -186,17 +215,20 @@ export async function hydrateLearningFromCloud() {
   const localEvents = getStudyEvents();
   const localVocab = getVocabCards();
   const localPatternScores = getPatternScores();
+  const localPromotions = getPromotions();
 
   const mergedPlan = localPlan ?? cloud.plan ?? null;
   const mergedEvents = mergeEvents(localEvents, cloud.events ?? []);
   const mergedVocab = mergeById(localVocab, cloud.vocabCards ?? [], 500);
   const mergedPatternScores = mergeById(localPatternScores, cloud.patternScores ?? [], 300);
+  const mergedPromotions = mergeById(localPromotions, cloud.promotions ?? [], 200);
 
   setLearningState({
     plan: mergedPlan,
     events: mergedEvents,
     vocabCards: mergedVocab,
     patternScores: mergedPatternScores,
+    promotions: mergedPromotions,
     updatedAt: new Date().toISOString(),
   });
 
