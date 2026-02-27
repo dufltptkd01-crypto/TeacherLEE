@@ -113,12 +113,27 @@ export default function ReportPage() {
 
   const recentPattern = patternScores.slice(0, 5);
 
+  const lowProgressSubjects = subjectGoals.filter((g) => {
+    const vocabPct = (g.vocabDone / g.vocabTarget) * 100;
+    const patternPct = (g.patternDone / g.patternTarget) * 100;
+    return vocabPct < 70 || patternPct < 70;
+  });
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 pb-6 lg:pb-8">
       <div>
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">📈 학습 리포트</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">이번 주 학습 통계와 AI 분석 결과</p>
       </div>
+
+      {lowProgressSubjects.length > 0 && (
+        <div className="rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3">
+          <p className="text-sm font-semibold text-amber-200 mb-1">🔔 주간 목표 알림</p>
+          <p className="text-xs text-amber-100">
+            {lowProgressSubjects.map((s) => `${s.icon} ${s.subject}`).join(", ")} 과목의 목표 달성률이 70% 미만입니다. 오늘 단어 복습 + 패턴 3개를 우선 진행해보세요.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -185,6 +200,11 @@ export default function ReportPage() {
                   <span className="text-xs text-[var(--secondary)]">{p.score}점</span>
                 </div>
                 <p className="text-xs text-[var(--text-muted)] line-clamp-2">{p.feedback}</p>
+                {p.rubric && (
+                  <p className="text-[11px] text-[var(--text-muted)] mt-1">
+                    문법 {p.rubric.grammar} · 자연스러움 {p.rubric.fluency} · 어휘 {p.rubric.vocabulary}
+                  </p>
+                )}
               </div>
             ))}
           </div>

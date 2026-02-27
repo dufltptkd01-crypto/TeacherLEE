@@ -38,6 +38,11 @@ export type PatternScore = {
   text: string;
   score: number;
   feedback: string;
+  rubric?: {
+    grammar: number;
+    fluency: number;
+    vocabulary: number;
+  };
   at: string;
 };
 

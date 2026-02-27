@@ -332,6 +332,11 @@ export default function ChatPage() {
                 text: patternText.trim(),
                 score: Number(data.score || 60),
                 feedback: String(data.feedback || "좋아요. 다음 문장을 시도해보세요."),
+                rubric: {
+                    grammar: Number(data?.rubric?.grammar || 60),
+                    fluency: Number(data?.rubric?.fluency || 60),
+                    vocabulary: Number(data?.rubric?.vocabulary || 60),
+                },
                 at: new Date().toISOString(),
             };
             const next = [scoreItem, ...patternScores].slice(0, 100);
@@ -347,6 +352,7 @@ export default function ChatPage() {
 
     const dueCards = vocabCards
         .filter((c) => c.subject === selectedSubject && new Date(c.nextReviewAt).getTime() <= Date.now())
+        .sort((a, b) => b.wrongCount - a.wrongCount || new Date(a.nextReviewAt).getTime() - new Date(b.nextReviewAt).getTime())
         .slice(0, 8);
 
     const startDueReview = () => {
@@ -505,9 +511,16 @@ export default function ChatPage() {
                             {scoring ? "채점 중..." : "AI 채점"}
                         </button>
                         {recentPatternScore && (
-                            <p className="text-xs text-[var(--text-secondary)]">
-                                최근 점수: <span className="font-semibold">{recentPatternScore.score}점</span> · {recentPatternScore.feedback}
-                            </p>
+                            <div className="text-xs text-[var(--text-secondary)] space-y-1">
+                                <p>
+                                    최근 점수: <span className="font-semibold">{recentPatternScore.score}점</span> · {recentPatternScore.feedback}
+                                </p>
+                                {recentPatternScore.rubric && (
+                                    <p className="text-[11px] text-[var(--text-muted)]">
+                                        문법 {recentPatternScore.rubric.grammar} · 자연스러움 {recentPatternScore.rubric.fluency} · 어휘 {recentPatternScore.rubric.vocabulary}
+                                    </p>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>

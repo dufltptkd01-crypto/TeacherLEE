@@ -49,12 +49,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       score,
       feedback: "AI 채점 키가 없어 길이 기반 임시 점수로 표시됩니다. 핵심 어순/문법을 한 번 더 점검해 보세요.",
+      rubric: { grammar: score, fluency: Math.max(40, score - 5), vocabulary: Math.max(35, score - 8) },
       fallback: true,
     });
   }
 
   try {
-    const prompt = `You are a strict but helpful language-writing evaluator.\nSubject: ${subject || "korean"}\nPattern target: ${pattern}\nUser text: ${text}\n\nReturn JSON only with keys: score(0-100 integer), feedback(short Korean advice).`;
+    const prompt = `You are a strict but helpful language-writing evaluator.\nSubject: ${subject || "korean"}\nPattern target: ${pattern}\nUser text: ${text}\n\nReturn JSON only with keys: score(0-100 integer), feedback(short Korean advice), rubric{grammar(0-100), fluency(0-100), vocabulary(0-100)}.`;
 
     const res = await client().chat.completions.create(
       {
@@ -73,12 +74,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       score: Number(parsed.score) || 60,
       feedback: String(parsed.feedback || "좋아요. 문장 연결을 조금 더 자연스럽게 다듬어 보세요."),
+      rubric: {
+        grammar: Number(parsed?.rubric?.grammar) || 60,
+        fluency: Number(parsed?.rubric?.fluency) || 60,
+        vocabulary: Number(parsed?.rubric?.vocabulary) || 60,
+      },
     });
   } catch {
     const score = Math.max(45, Math.min(90, Math.round(text.length * 0.9)));
     return NextResponse.json({
       score,
       feedback: "임시 채점 결과입니다. 핵심 패턴을 문장 앞부분에 명확히 넣어 다시 작성해 보세요.",
+      rubric: { grammar: score, fluency: Math.max(40, score - 6), vocabulary: Math.max(35, score - 10) },
       fallback: true,
     });
   }
