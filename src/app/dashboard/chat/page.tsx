@@ -106,6 +106,7 @@ export default function ChatPage() {
     const [patternDone, setPatternDone] = useState<string[]>([]);
     const [patternText, setPatternText] = useState("");
     const [patternScores, setPatternScoresState] = useState<PatternScore[]>([]);
+    const [retryPatternPrompt, setRetryPatternPrompt] = useState<string | null>(null);
     const [scoring, setScoring] = useState(false);
 
     const [quiz, setQuiz] = useState(() => pickRandom(letterQuizzes.korean));
@@ -348,6 +349,16 @@ export default function ChatPage() {
                 },
                 at: new Date().toISOString(),
             };
+
+            const weakAreas: string[] = [];
+            if ((scoreItem.rubric?.grammar ?? 0) < 70) weakAreas.push("문법");
+            if ((scoreItem.rubric?.fluency ?? 0) < 70) weakAreas.push("자연스러움");
+            if ((scoreItem.rubric?.vocabulary ?? 0) < 70) weakAreas.push("어휘");
+            if (weakAreas.length) {
+                setRetryPatternPrompt(`${target} 패턴에서 ${weakAreas.join(", ")}이 약합니다. 같은 패턴으로 재문제 2개를 내주세요.`);
+            } else {
+                setRetryPatternPrompt(null);
+            }
             const next = [scoreItem, ...patternScores].slice(0, 100);
             setPatternScoresState(next);
             setPatternScores(next);
@@ -528,6 +539,15 @@ export default function ChatPage() {
                                     <p className="text-[11px] text-[var(--text-muted)]">
                                         문법 {recentPatternScore.rubric.grammar} · 자연스러움 {recentPatternScore.rubric.fluency} · 어휘 {recentPatternScore.rubric.vocabulary}
                                     </p>
+                                )}
+                                {retryPatternPrompt && (
+                                    <button
+                                        type="button"
+                                        onClick={() => sendMessage(retryPatternPrompt)}
+                                        className="text-[11px] px-2 py-1 rounded-lg border border-amber-400/30 bg-amber-500/10 text-amber-300"
+                                    >
+                                        오답 기반 재문제 생성
+                                    </button>
                                 )}
                             </div>
                         )}

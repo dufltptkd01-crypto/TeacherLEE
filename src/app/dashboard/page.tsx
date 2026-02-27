@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { getOnboardingPlan, getStudyEvents, hydrateLearningFromCloud } from "@/lib/learning/clientStore";
+import { getOnboardingPlan, getPatternScores, getStudyEvents, getVocabCards, hydrateLearningFromCloud } from "@/lib/learning/clientStore";
 
 const levelLabel: Record<string, string> = {
     beginner: "완전 초보",
@@ -16,6 +16,8 @@ const levelLabel: Record<string, string> = {
 export default function DashboardPage() {
     const [plan, setPlan] = useState(() => getOnboardingPlan());
     const [events, setEvents] = useState(() => getStudyEvents());
+    const [patternScores, setPatternScores] = useState(() => getPatternScores());
+    const [vocabCards, setVocabCards] = useState(() => getVocabCards());
     const [nowTs, setNowTs] = useState(() => Date.now());
 
     useEffect(() => {
@@ -24,6 +26,8 @@ export default function DashboardPage() {
             .finally(() => {
                 setPlan(getOnboardingPlan());
                 setEvents(getStudyEvents());
+                setPatternScores(getPatternScores());
+                setVocabCards(getVocabCards());
                 setNowTs(Date.now());
             });
     }, []);
@@ -81,10 +85,32 @@ export default function DashboardPage() {
         { label: "정확도", value: "측정중", change: "-", up: true },
     ];
 
+    const twoWeeksAgo = nowTs - 14 * 24 * 60 * 60 * 1000;
+    const twoWeekScores = patternScores.filter((p) => new Date(p.at).getTime() >= twoWeeksAgo);
+    const avg2WeekScore = twoWeekScores.length
+        ? Math.round(twoWeekScores.reduce((a, b) => a + b.score, 0) / twoWeekScores.length)
+        : 0;
+
+    const promotionCandidate = avg2WeekScore >= 82 && twoWeekScores.length >= 6;
+
+    const subjectWidgets = (plan?.subjects || []).slice(0, 3).map((s) => {
+        const weekVocab = vocabCards.filter((v) => v.subject === s.id && nowTs - new Date(v.addedAt).getTime() < 7 * 24 * 60 * 60 * 1000).length;
+        const weekSubjectEvents = events.filter((e) => e.subject === s.id && nowTs - new Date(e.at).getTime() < 7 * 24 * 60 * 60 * 1000).length;
+        return {
+            id: s.id,
+            icon: s.icon,
+            title: s.title,
+            level: levelLabel[s.level] ?? "입문",
+            weekVocab,
+            weekSubjectEvents,
+        };
+    });
+
     const recentFeedback = events.length
         ? [
             { type: "success", text: `이번 주 학습 활동 ${weeklyEventCount}회 기록됨`, subject: "📈" },
             { type: "info", text: `가장 최근 학습: ${new Date(events[events.length - 1].at).toLocaleString("ko-KR")}`, subject: "🕒" },
+            ...(promotionCandidate ? [{ type: "success", text: `2주 평균 채점 ${avg2WeekScore}점 — 자동 승급 조건을 충족했어요!`, subject: "🚀" }] : []),
           ]
         : [{ type: "info", text: "아직 학습 기록이 없습니다. AI 대화부터 시작해 보세요.", subject: "🧭" }];
 
@@ -147,6 +173,13 @@ export default function DashboardPage() {
                     )}
                 </div>
             </div>
+
+            {promotionCandidate && (
+                <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-5 py-4">
+                    <p className="text-sm font-semibold text-emerald-200">🚀 레벨 자동 승급 조건 충족</p>
+                    <p className="text-xs text-emerald-100 mt-1">최근 2주 평균 채점 {avg2WeekScore}점 ({twoWeekScores.length}회)으로 다음 레벨 학습을 시작할 수 있어요.</p>
+                </div>
+            )}
 
             {/* Two Column Layout */}
             <div className="grid lg:grid-cols-3 gap-6">
@@ -245,6 +278,24 @@ export default function DashboardPage() {
 
                 {/* Right Column */}
                 <div className="space-y-6">
+                    {/* Subject Widgets */}
+                    <div className="glass rounded-2xl p-6">
+                        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4">🧩 과목별 맞춤 홈 위젯</h2>
+                        <div className="space-y-3">
+                            {subjectWidgets.length ? subjectWidgets.map((w) => (
+                                <div key={w.id} className="rounded-xl border border-[var(--border)] p-3">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-sm font-medium text-[var(--text-primary)]">{w.icon} {w.title}</span>
+                                        <span className="text-xs text-[var(--text-muted)]">{w.level}</span>
+                                    </div>
+                                    <div className="text-xs text-[var(--text-muted)]">이번 주 단어 {w.weekVocab}개 · 학습활동 {w.weekSubjectEvents}회</div>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-[var(--text-muted)]">온보딩을 완료하면 과목별 위젯이 표시됩니다.</p>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Quick Actions */}
                     <div className="glass rounded-2xl p-6">
                         <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4">
