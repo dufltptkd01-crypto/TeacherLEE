@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { getOnboardingPlan, getPatternScores, getStudyEvents, getVocabCards, hydrateLearningFromCloud } from "@/lib/learning/clientStore";
+import { getOnboardingPlan, getPatternScores, getStudyEvents, getVocabCards, hydrateLearningFromCloud, setOnboardingPlan, syncLearningToCloud } from "@/lib/learning/clientStore";
 
 const levelLabel: Record<string, string> = {
     beginner: "완전 초보",
@@ -10,6 +10,14 @@ const levelLabel: Record<string, string> = {
     intermediate: "중급",
     advanced: "고급",
 };
+
+const levelOrder = ["beginner", "elementary", "intermediate", "advanced"] as const;
+
+function promoteLevel(level: string) {
+    const idx = levelOrder.indexOf(level as (typeof levelOrder)[number]);
+    if (idx < 0 || idx >= levelOrder.length - 1) return level;
+    return levelOrder[idx + 1];
+}
 
 
 
@@ -92,6 +100,33 @@ export default function DashboardPage() {
         : 0;
 
     const promotionCandidate = avg2WeekScore >= 82 && twoWeekScores.length >= 6;
+
+    useEffect(() => {
+        if (!plan?.subjects?.length || !promotionCandidate) return;
+
+        let changed = false;
+        const promotedSubjects = plan.subjects.map((s) => {
+            const subjectScores = twoWeekScores.filter((p) => (p.subject || "") === s.id);
+            if (subjectScores.length < 4) return s;
+            const avg = Math.round(subjectScores.reduce((a, b) => a + b.score, 0) / subjectScores.length);
+            if (avg < 82) return s;
+
+            const nextLevel = promoteLevel(s.level);
+            if (nextLevel !== s.level) {
+                changed = true;
+                return { ...s, level: nextLevel };
+            }
+            return s;
+        });
+
+        if (!changed) return;
+
+        const nextPlan = { ...plan, subjects: promotedSubjects };
+        setPlan(nextPlan);
+        setOnboardingPlan(nextPlan);
+        syncLearningToCloud().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [promotionCandidate]);
 
     const subjectWidgets = (plan?.subjects || []).slice(0, 3).map((s) => {
         const weekVocab = vocabCards.filter((v) => v.subject === s.id && nowTs - new Date(v.addedAt).getTime() < 7 * 24 * 60 * 60 * 1000).length;
@@ -288,7 +323,11 @@ export default function DashboardPage() {
                                         <span className="text-sm font-medium text-[var(--text-primary)]">{w.icon} {w.title}</span>
                                         <span className="text-xs text-[var(--text-muted)]">{w.level}</span>
                                     </div>
-                                    <div className="text-xs text-[var(--text-muted)]">이번 주 단어 {w.weekVocab}개 · 학습활동 {w.weekSubjectEvents}회</div>
+                                    <div className="text-xs text-[var(--text-muted)] mb-2">이번 주 단어 {w.weekVocab}개 · 학습활동 {w.weekSubjectEvents}회</div>
+                                    <div className="flex gap-2">
+                                        <Link href={`/dashboard/chat?mode=vocab&starter=${w.id}`} className="text-[11px] px-2 py-1 rounded-md border border-[var(--border)] hover:border-[var(--primary)]/40">단어 미션</Link>
+                                        <Link href={`/dashboard/chat?mode=patterns&starter=${w.id}`} className="text-[11px] px-2 py-1 rounded-md border border-[var(--border)] hover:border-[var(--primary)]/40">패턴 미션</Link>
+                                    </div>
                                 </div>
                             )) : (
                                 <p className="text-xs text-[var(--text-muted)]">온보딩을 완료하면 과목별 위젯이 표시됩니다.</p>

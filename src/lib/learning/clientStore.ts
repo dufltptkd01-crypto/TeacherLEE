@@ -34,6 +34,7 @@ export type VocabCard = {
 
 export type PatternScore = {
   id: string;
+  subject?: string;
   pattern: string;
   text: string;
   score: number;

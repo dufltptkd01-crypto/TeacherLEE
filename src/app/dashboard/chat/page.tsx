@@ -151,6 +151,23 @@ export default function ChatPage() {
         setQuizFeedback(null);
     }, [selectedSubject]);
 
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const params = new URLSearchParams(window.location.search);
+        const starter = params.get("starter");
+        const mode = params.get("mode");
+
+        if (starter && subjects.some((s) => s.id === starter)) {
+            setSelectedSubject(starter as (typeof subjects)[number]["id"]);
+        }
+
+        if (mode === "letters" || mode === "vocab" || mode === "patterns") {
+            setLearningMode(mode);
+            setTimeout(() => sendLearningStarter(mode), 150);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const sendLearningStarter = (mode: (typeof foundationModes)[number]["id"]) => {
         const subjectLabel = subjects.find((s) => s.id === selectedSubject)?.name ?? "한국어";
         if (mode === "letters") return sendMessage(`${subjectLabel} 문자/발음 기초 퀴즈를 5문제 시작해 주세요.`);
@@ -338,6 +355,7 @@ export default function ChatPage() {
             const data = await res.json();
             const scoreItem: PatternScore = {
                 id: crypto.randomUUID(),
+                subject: selectedSubject,
                 pattern: target,
                 text: patternText.trim(),
                 score: Number(data.score || 60),
